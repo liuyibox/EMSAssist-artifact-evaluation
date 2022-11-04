@@ -204,8 +204,20 @@ def convert_examples_to_features(examples,
         else:
           print("Please choose right feature_type")
       label_ids.append(label_map[example.label])
+      
+#      if ex_index == 0:
+#
+#        print("sparse_indices:")
+#        print(sparse_indices)
+#        print("sparse_values:")
+#        print(sparse_values)
+#        print("scipy_presentation:")
+#        print(to_scipy_sparse())
+#
+#        csr_matrix((data, (row, col)), dense_shape)
 
 #    return tf.sparse.SparseTensor(indices=sparse_indices, values=sparse_values, dense_shape = [len(features), len(tokenizer.vocab)]), label_ids 
+
     return to_scipy_sparse(sparse_indices, sparse_values, (len(examples), len(tokenizer.vocab))), label_ids
 
   elif feature_type == "word_counts" or feature_type == "words":

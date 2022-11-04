@@ -292,7 +292,7 @@ def convert_examples_to_features(examples,
         logging.info("words: %s", ", ".join([str(x) for x in example.words]))
         logging.info("label: %s (id = %s)", example.label, label_map[example.label])
 
-      one_hot_enc = tf.one_hot(indices=input_ids, depth=len(refinfo.word_map))
+      one_hot_enc = tf.one_hot(indices=input_ids, depth=len(refinfo.word_map), dtype=tf.int64)
       input_ids = tf.math.reduce_max(one_hot_enc, axis=0)
       feature = collections.OrderedDict()
       feature["input_ids"] = create_int_feature(input_ids.numpy())
@@ -322,7 +322,7 @@ def convert_examples_to_features(examples,
         logging.info("codes: %s", ", ".join([str(x) for x in example.codes]))
         logging.info("label: %s (id = %s)", example.label, label_map[example.label])
 
-      one_hot_enc = tf.one_hot(indices=input_ids, depth=len(refinfo.code_map))
+      one_hot_enc = tf.one_hot(indices=input_ids, depth=len(refinfo.code_map), dtype=tf.int64)
       input_ids = tf.math.reduce_max(one_hot_enc, axis=0)
       feature = collections.OrderedDict()
       feature["input_ids"] = create_int_feature(input_ids.numpy())

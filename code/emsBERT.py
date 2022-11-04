@@ -845,42 +845,46 @@ def model_test(test_ds, args):
         k = 5, name = 'top5_accuracy', dtype=tf.float32)
 
     model_dir_list = tf.io.gfile.listdir(args.model_dir)
-    model_dir_list.sort()
+    best_model_ckpt = natsort.natsorted(model_dir_list)[-1]
+    print("we have %s emsANN: %s, we choose %s " % (len(model_dir_list), model_dir_list, best_model_ckpt))
 
-    best_top3_score = 0.0
-    best_bert_model = None
-    best_bert_idx = -1
+#    model_dir_list = tf.io.gfile.listdir(args.model_dir)
+#    model_dir_list.sort()
 
-    for idx, ckpt_model_dir in enumerate(model_dir_list):
-        ckpt_model = os.path.join(args.model_dir, ckpt_model_dir)
+#    best_top3_score = 0.0
+#    best_bert_model = None
+#    best_bert_idx = -1
+
+#    for idx, ckpt_model_dir in enumerate(model_dir_list):
+    best_model_ckpt = os.path.join(args.model_dir, best_model_ckpt)
 #        args.init_model = ckpt_model
 #        print("testing the model: %s" % args.init_model)
-        test_data_size = len(list(test_ds))
-        print("testing the model: %s with size %s" % (ckpt_model, test_data_size))
-        bert_model = tf.keras.models.load_model(ckpt_model, compile=False)
-        bert_model.compile(
-                optimizer='adam',
-                loss=tf.keras.losses.SparseCategoricalCrossentropy(),
-                metrics=[top1_metric_fn(), top3_metric_fn(), top5_metric_fn()])
+    test_data_size = len(list(test_ds))
+    print("testing the model: %s with size %s" % (best_model_ckpt, test_data_size))
+    bert_model = tf.keras.models.load_model(best_model_ckpt, compile=False)
+    bert_model.compile(
+            optimizer='adam',
+            loss=tf.keras.losses.SparseCategoricalCrossentropy(),
+            metrics=[top1_metric_fn(), top3_metric_fn(), top5_metric_fn()])
 
-        # measure the inference latency
+    # measure the inference latency
 
-        time_s = datetime.now()
-        eval_result = bert_model.evaluate(test_ds)
-        time_t = datetime.now() - time_s
-        time_a = time_t / test_data_size
-        print("inference time of model %s on server is %s" % (ckpt_model, time_a))
+    time_s = datetime.now()
+    eval_result = bert_model.evaluate(test_ds)
+    time_t = datetime.now() - time_s
+    time_a = time_t / test_data_size
+    print("inference time of model %s on server is %s" % (best_model_ckpt, time_a))
 
-        print("test result %s" % eval_result)
-        if eval_result[2] > best_top3_score:
-            best_top3_score = eval_result[2]
-            best_bert_model = bert_model
-            best_bert_idx = idx
-        
+#    print("test result %s" % eval_result)
+#    if eval_result[2] > best_top3_score:
+#        best_top3_score = eval_result[2]
 #        best_bert_model = bert_model
-    print("selected best model: %s" % best_bert_idx)
+#        best_bert_idx = idx
+    
+#    best_bert_model = bert_model
+#    print("selected best model: %s" % best_bert_idx)
 
-    return best_bert_model
+    return bert_model
 
 # Step 5. Export as a TensorFlow Lite model.
 
