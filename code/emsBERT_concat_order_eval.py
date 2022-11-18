@@ -428,13 +428,15 @@ def codes_to_texts(codes_lines, refinfo):
     event = codes_line.split("~|~")
     assert len(event) == 5
 
-    text_line.append(d[event[0]])
-    word_line.extend(d[event[0]].split())
-    code_line.append(event[0])
+    for code in event[0].split(' '):
+        text_line.append(d[code])
+        word_line.extend(d[code].split())
+    code_line.append(event[0].split(' '))
 
-    text_line.append(d[event[1]])
-    word_line.extend(d[event[1]].split())
-    code_line.append(event[1])
+    for code in event[1].split(' '):
+        text_line.append(d[code])
+        word_line.extend(d[code].split())
+    code_line.append(event[1].split(' '))
 
     for code in event[2].split(' '):
       text_line.append(d[code])

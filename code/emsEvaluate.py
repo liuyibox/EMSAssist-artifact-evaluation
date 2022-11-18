@@ -13,60 +13,43 @@ import tokenization
 import optimization
 import configs as bert_configs
 import quantization_configs as quant_configs
-import metadata_writer_for_bert_text_classifier as bert_metadata_writer
+#import metadata_writer_for_bert_text_classifier as bert_metadata_writer
 import tensorflow_hub as hub
 from datetime import datetime
 import random
 import tempfile
 import argparse
 import natsort
+import time
 
 #import TFUtils as tfutil
 import pandas as pd
 #import Utils as util
+from ranking_func import rank
+from scipy import spatial
+import Utils as util
+import math
 
 global_seed = 1993
 
-def readFile(file_path, encoding = None):
-    f = open(file_path, 'r')
-    lines = f.read().splitlines()
-    res = []
-    for line in lines:
-        line = line.strip()
-        res.append(line)
+
+speakers = ["liuyi", "tian", "yichen"]
+
+#def readFile(file_path, encoding = None):
+#    f = open(file_path, 'r')
+#    lines = f.read().splitlines()
+#    res = []
+#    for line in lines:
+#        line = line.strip()
+#        res.append(line)
+#    f.close()
+#    return res
+
+def writeListFile(file_path, output_list):
+    f = open(file_path, mode = "w")
+    output_str = "\n".join(output_list)
+    f.write(output_str)
     f.close()
-    return res
-
-class InputExample(object):
-  """A single training/test example for simple sequence classification."""
-
-  def __init__(self,
-               guid,
-               text_a,
-               text_b=None,
-               label=None,
-               int_iden=None):
-    """Constructs a InputExample.
-
-    Args:
-      guid: Unique id for the example.
-      text_a: string. The untokenized text of the first sequence. For single
-        sequence tasks, only this sequence must be specified.
-      text_b: (Optional) string. The untokenized text of the second sequence.
-        Only must be specified for sequence pair tasks.
-      label: (Optional) string. The label of the example. This should be
-        specified for train and dev examples, but not for test examples.
-      weight: (Optional) float. The weight of the example to be used during
-        training.
-      int_iden: (Optional) int. The int identification number of example in the
-        corpus.
-    """
-    self.guid = guid
-    self.text_a = text_a
-    self.text_b = text_b
-    self.label = label
-    self.int_iden = int_iden
-
 
 class InputFeatures(object):
   """A single set of features of data."""
@@ -75,15 +58,159 @@ class InputFeatures(object):
                input_ids,
                input_mask,
                segment_ids,
-               label_id,
-               is_real_example=True,
-               int_iden=None):
+               label_id):
     self.input_ids = input_ids
     self.input_mask = input_mask
     self.segment_ids = segment_ids
     self.label_id = label_id
-    self.is_real_example = is_real_example
-    self.int_iden = int_iden
+
+def computeSimilarity(tv, pvs, pids, metric = "cosine"):
+
+    ranking_list = []
+    for i in range(pvs.shape[0]):
+        pv = pvs[i]
+        cur_id = pids[i]
+        sim = 0.0
+        if metric == "cosine":
+            sim = 1 - spatial.distance.cosine(tv, pv)
+            if math.isnan(sim):
+                sim = 0.0
+        elif metric == "dot":
+            sim = np.dot(tv, pv)
+        else:
+            print("we require a metric: cosine, dot_product")
+            exit(1)
+            
+        ranking_list.append((cur_id, sim))
+        
+    return ranking_list
+
+def get_top_score(pvs, tvs, pids, tids, args):
+    top1 = 0.0
+    top3 = 0.0
+    top5 = 0.0   
+    total_count = tvs.shape[0]
+    for idx in range(tvs.shape[0]):
+
+        tv = tvs[idx]
+        tp = tids[idx]
+        ranking = computeSimilarity(tv, pvs, pids, metric = args.metric)
+        # rank
+        candi_list, score_list = rank(ranking)[0], rank(ranking)[1]
+#        if idx == 0:
+#            print(candi_list, score_list)
+
+        top1set = set()
+        top3set = set()
+        top5set = set()
+        # for each input, we get an top-1, top-3, top-5 score, respectively
+        num = sum(score_list[:5])
+        for candi_idx, candi_id in enumerate(candi_list):
+#            candi_id_st = set(candi_id.split(';'))
+            if candi_idx >= 5:
+                break
+            candi_score = (0.0 if num == 0.0 else score_list[candi_idx] / num)
+            if candi_idx == 0:
+                top1set.add(candi_id)
+            if candi_idx <= 2:
+                top3set.add(candi_id)
+            top5set.add(candi_id)
+#            out_count += 1
+
+        if tp in top1set != 0:
+            top1 += 1.0
+
+        if tp in top3set != 0:
+            top3 += 1.0
+
+        if tp in top5set != 0:
+            top5 += 1.0
+
+    return top1/total_count, top3/total_count, top5/total_count
+        
+
+def getFittedInfo():
+
+    #protocol_csv_file = os.path.join(home_dir, 'Fit_NEMSIS_To_TAMU_Revision1.tsv')
+    protocol_csv_file = '/home/liuyi/MetamapMatching/Fit_NEMSIS_To_TAMU_Revision1.tsv'
+
+    # original tamu protocol set size if 108
+    tamu_text_f = '/home/liuyi/MetamapMatching/revision1_text.txt'
+    tamu_texts = util.readFile(tamu_text_f)
+
+    tamu_text_c_f = '/home/liuyi/MetamapMatching/revision1_text_metamap_concepts.txt'
+    tamu_text_c = util.readNEMSISFile(tamu_text_c_f, discard_header = False)
+
+    tamu_text_mmlc_f = '/home/liuyi/MetamapMatching/revision1_text_metamaplite_concepts.txt'
+    tamu_text_mmlc = util.readNEMSISFile(tamu_text_mmlc_f, discard_header = False)
+
+    nemsis_id2text = dict()
+    nemsis_id2c = dict()
+    nemsis_id2mmlc = dict()
+    
+    protocol_list = pd.read_csv(protocol_csv_file, sep = '\t', dtype = str)
+    protocol_list = protocol_list[['TAMU Protocol ID', 'TAMU Protocol', 'NEMSIS Protocol ID', 'NEMSIS Protocol', 'Signs&Symptoms', 'History']]
+    protocol_list = protocol_list.dropna()
+
+    idx = 0
+    nemsis_id_set = set()
+    for _, row in protocol_list.iterrows():
+
+        cur_tamu_id = row['TAMU Protocol ID']
+        cur_tamu_name = row['TAMU Protocol']
+        cur_nemsis_id = row['NEMSIS Protocol ID']
+        cur_nemsis_name = row['NEMSIS Protocol']
+        cur_sign = row['Signs&Symptoms']
+#        cur_hist = row['History']
+
+#        if cur_tamu_id == "" or cur_tamu_name == "" or cur_nemsis_id == "" or cur_nemsis_name == "" or cur_sign == "" or cur_hist == "":
+        if cur_tamu_id == "" or cur_tamu_name == "" or cur_nemsis_id == "" or cur_nemsis_name == "" or cur_sign == "":
+            continue
+
+        nemsis_id_set.add(cur_nemsis_id)
+
+        cur_text = tamu_texts[idx]          # str
+        cur_c = tamu_text_c[idx]            # list
+        cur_mmlc = tamu_text_mmlc[idx]      # list
+
+        if cur_nemsis_id in nemsis_id2c:     # id - concept_list
+            assert(isinstance(nemsis_id2c[cur_nemsis_id], list))
+            nemsis_id2c[cur_nemsis_id].extend(cur_c)
+        else:
+            nemsis_id2c[cur_nemsis_id] = cur_c
+
+        if cur_nemsis_id in nemsis_id2mmlc:     # id - concept_list
+            assert(isinstance(nemsis_id2mmlc[cur_nemsis_id], list))
+            nemsis_id2mmlc[cur_nemsis_id].extend(cur_mmlc)
+        else:
+            nemsis_id2mmlc[cur_nemsis_id] = cur_mmlc
+
+        if cur_nemsis_id in nemsis_id2text:
+            assert(isinstance(nemsis_id2text[cur_nemsis_id], str))
+            v = nemsis_id2text[cur_nemsis_id]
+            nemsis_id2text[cur_nemsis_id] = v + ' ' + cur_text
+        else:
+            nemsis_id2text[cur_nemsis_id] = cur_text
+
+        idx += 1
+
+
+    nemsis_id_list = list(nemsis_id_set)
+    nemsis_id_list.sort()
+
+    fitted_c_list = []
+    fitted_mmlc_list = []
+    fitted_text_list = []
+    for nemsis_id in nemsis_id_list:
+        c = nemsis_id2c[nemsis_id]          # c is a list
+        fitted_c_list.append(c)
+        mmlc = nemsis_id2mmlc[nemsis_id]    # mmlc is a list
+        fitted_mmlc_list.append(mmlc)
+        text = nemsis_id2text[nemsis_id]    # text is a string
+        fitted_text_list.append(text)
+
+    return fitted_c_list, fitted_mmlc_list, fitted_text_list, nemsis_id_list
+
 
 class RefInfo(object):
 
@@ -104,7 +231,7 @@ class RefInfo(object):
     global_d = dict()
 
     for ref_idx, ref_file_path in enumerate(self.ref_files):
-      ref_f_lines = readFile(ref_file_path)
+      ref_f_lines = util.readFile(ref_file_path)
       ref_f_lines = [s.split("~|~") for s in ref_f_lines]
       d = dict()
 
@@ -127,7 +254,6 @@ class RefInfo(object):
 
     codes_list = list(global_d.keys())
     codes_list = natsort.natsorted(codes_list)
-#    writeListFile("sorted_codes_list.txt", codes_list)
     codes_map = dict()
     for (i, code) in enumerate(codes_list):
       codes_map[code] = i
@@ -137,259 +263,12 @@ class RefInfo(object):
       words_set.update(v.split())
     words_list = list(words_set)
     words_list = natsort.natsorted(words_list)
-#    writeListFile("sorted_words_list.txt", words_list)
     words_map = dict()
     for (i, word) in enumerate(words_list):
       words_map[word] = i
   
     return d_list, global_d, codes_map, words_map
  
-
-def decode_record(record, name_to_features):
-  """Decodes a record to a TensorFlow example."""
-  example = tf.io.parse_single_example(record, name_to_features)
-
-  # tf.Example only supports tf.int64, but the TPU only supports tf.int32.
-  # So cast all int64 to int32.
-  for name in list(example.keys()):
-    t = example[name]
-    if t.dtype == tf.int64:
-      t = tf.cast(t, tf.int32)
-    example[name] = t
-
-  return example
-
-def single_file_dataset(input_file, name_to_features):
-  """Creates a single-file dataset to be passed for BERT custom training."""
-  # For training, we want a lot of parallel reading and shuffling.
-  # For eval, we want no shuffling and parallel reading doesn't matter.
-  d = tf.data.TFRecordDataset(input_file)
-  d = d.map(
-      lambda record: decode_record(record, name_to_features),
-      num_parallel_calls=tf.data.experimental.AUTOTUNE)
-
-  # When `input_file` is a path to a single file or a list
-  # containing a single path, disable auto sharding so that
-  # same input file is sent to all workers.
-  if isinstance(input_file, str) or len(input_file) == 1:
-    options = tf.data.Options()
-    options.experimental_distribute.auto_shard_policy = (
-        tf.data.experimental.AutoShardPolicy.OFF)
-    d = d.with_options(options)
-  return d
-
-def get_name_to_features(seq_len):
-  """Gets the dictionary describing the features."""
-  name_to_features = {
-      'input_ids': tf.io.FixedLenFeature([seq_len], tf.int64),
-      'input_mask': tf.io.FixedLenFeature([seq_len], tf.int64),
-      'segment_ids': tf.io.FixedLenFeature([seq_len], tf.int64),
-      'label_ids': tf.io.FixedLenFeature([], tf.int64),
-      'is_real_example': tf.io.FixedLenFeature([], tf.int64),
-  }
-  return name_to_features
-
-def select_data_from_record(record):
-  """Dispatches records to features and labels."""
-  x = {
-      'input_word_ids': record['input_ids'],
-      'input_mask': record['input_mask'],
-      'input_type_ids': record['segment_ids']
-  }
-  y = record['label_ids']
-  return (x, y)
-
-def _load(tfrecord_file, meta_data_file, max_seq_len):
-  """Loads data from tfrecord file and metada file."""
-
-  name_to_features = get_name_to_features(max_seq_len)
-
-  dataset = single_file_dataset(tfrecord_file, name_to_features)
-  dataset = dataset.map(select_data_from_record, num_parallel_calls=tf.data.AUTOTUNE)
-
-  meta_data = file_util.load_json_file(meta_data_file)
-
-  logging.info(
-      'Load preprocessed data and metadata from %s and %s '
-      'with size: %d', tfrecord_file, meta_data_file, meta_data['size'])
-  return dataset, meta_data
-
-def get_cache_info(cache_dir, data_name):
-
-  assert(cache_dir is not None)
-  if not tf.io.gfile.exists(cache_dir):
-    tf.io.gfile.mkdir(cache_dir)
-
-  file_prefix = data_name.split('.')[0]
-  cache_prefix = os.path.join(cache_dir, file_prefix)
-  tfrecord_file = cache_prefix + '.tfrecord'
-  meta_data_file = cache_prefix + '_meta_data'
-  is_cached = tf.io.gfile.exists(tfrecord_file) and tf.io.gfile.exists(meta_data_file)
-
-  return is_cached, tfrecord_file, meta_data_file
-
-#def read_csv(input_file, fieldnames=None, delimiter=',', quotechar='"'):
-#  """Reads a separated value file."""
-#  with tf.io.gfile.GFile(input_file, 'r') as f:
-#    reader = csv.DictReader(f, fieldnames=fieldnames, delimiter=delimiter, quotechar=quotechar)
-#    lines = []
-#    for line in reader:
-#      lines.append(line)
-#    return lines
-
-def convert_single_example(ex_index, example, label_list, max_seq_length,
-                           tokenizer):
-  """Converts a single `InputExample` into a single `InputFeatures`."""
-  label_map = {}
-  if label_list:
-    for (i, label) in enumerate(label_list):
-      label_map[label] = i
-
-  tokens_a = tokenizer.tokenize(example.text_a)
-  tokens_b = None
-  if example.text_b:
-    tokens_b = tokenizer.tokenize(example.text_b)
-
-  if tokens_b:
-    # Modifies `tokens_a` and `tokens_b` in place so that the total
-    # length is less than the specified length.
-    # Account for [CLS], [SEP], [SEP] with "- 3"
-    _truncate_seq_pair(tokens_a, tokens_b, max_seq_length - 3)
-  else:
-    # Account for [CLS] and [SEP] with "- 2"
-    if len(tokens_a) > max_seq_length - 2:
-      tokens_a = tokens_a[0:(max_seq_length - 2)]
-
-  # The convention in BERT is:
-  # (a) For sequence pairs:
-  #  tokens:   [CLS] is this jack ##son ##ville ? [SEP] no it is not . [SEP]
-  #  type_ids: 0     0  0    0    0     0       0 0     1  1  1  1   1 1
-  # (b) For single sequences:
-  #  tokens:   [CLS] the dog is hairy . [SEP]
-  #  type_ids: 0     0   0   0  0     0 0
-  #
-  # Where "type_ids" are used to indicate whether this is the first
-  # sequence or the second sequence. The embedding vectors for `type=0` and
-  # `type=1` were learned during pre-training and are added to the wordpiece
-  # embedding vector (and position vector). This is not *strictly* necessary
-  # since the [SEP] token unambiguously separates the sequences, but it makes
-  # it easier for the model to learn the concept of sequences.
-  #
-  # For classification tasks, the first vector (corresponding to [CLS]) is
-  # used as the "sentence vector". Note that this only makes sense because
-  # the entire model is fine-tuned.
-  tokens = []
-  segment_ids = []
-  tokens.append("[CLS]")
-  segment_ids.append(0)
-  for token in tokens_a:
-    tokens.append(token)
-    segment_ids.append(0)
-  tokens.append("[SEP]")
-  segment_ids.append(0)
-
-  if tokens_b:
-    for token in tokens_b:
-      tokens.append(token)
-      segment_ids.append(1)
-    tokens.append("[SEP]")
-    segment_ids.append(1)
-
-  input_ids = tokenizer.convert_tokens_to_ids(tokens)
-
-  # The mask has 1 for real tokens and 0 for padding tokens. Only real
-  # tokens are attended to.
-  input_mask = [1] * len(input_ids)
-
-  # Zero-pad up to the sequence length.
-  while len(input_ids) < max_seq_length:
-    input_ids.append(0)
-    input_mask.append(0)
-    segment_ids.append(0)
-
-  assert len(input_ids) == max_seq_length
-  assert len(input_mask) == max_seq_length
-  assert len(segment_ids) == max_seq_length
-
-  label_id = label_map[example.label] if label_map else example.label
-  if ex_index < 5:
-    logging.info("*** Example ***")
-    logging.info("guid: %s", (example.guid))
-    logging.info("tokens: %s",
-                 " ".join([tokenization.printable_text(x) for x in tokens]))
-    logging.info("input_ids: %s", " ".join([str(x) for x in input_ids]))
-    logging.info("input_mask: %s", " ".join([str(x) for x in input_mask]))
-    logging.info("segment_ids: %s", " ".join([str(x) for x in segment_ids]))
-    logging.info("label: %s (id = %s)", example.label, str(label_id))
-    logging.info("int_iden: %s", str(example.int_iden))
-
-  feature = InputFeatures(
-        input_ids=input_ids,
-        input_mask=input_mask,
-        segment_ids=segment_ids,
-        label_id=label_id,
-        is_real_example=True,
-        int_iden=example.int_iden)
-
-  return feature
-
-
-def file_based_convert_examples_to_features(examples,
-                                            label_list,
-                                            max_seq_length,
-                                            tokenizer,
-                                            output_file,
-                                            label_type=None):
-  """Convert a set of `InputExample`s to a TFRecord file."""
-
-  tf.io.gfile.makedirs(os.path.dirname(output_file))
-  writer = tf.io.TFRecordWriter(output_file)
-
-  for (ex_index, example) in enumerate(examples):
-    if ex_index % 10000 == 0:
-      logging.info("Writing example %d of %d", ex_index, len(examples))
-
-    feature = convert_single_example(ex_index, example, label_list,
-                                     max_seq_length, tokenizer)
-
-    def create_int_feature(values):
-      f = tf.train.Feature(int64_list=tf.train.Int64List(value=list(values)))
-      return f
-
-    def create_float_feature(values):
-      f = tf.train.Feature(float_list=tf.train.FloatList(value=list(values)))
-      return f
-
-    features = collections.OrderedDict()
-    features["input_ids"] = create_int_feature(feature.input_ids)
-    features["input_mask"] = create_int_feature(feature.input_mask)
-    features["segment_ids"] = create_int_feature(feature.segment_ids)
-    if label_type is not None and label_type == float:
-      features["label_ids"] = create_float_feature([feature.label_id])
-    elif feature.label_id is not None:
-      features["label_ids"] = create_int_feature([feature.label_id])
-    features["is_real_example"] = create_int_feature(
-        [int(feature.is_real_example)])
-    if feature.int_iden is not None:
-      features["int_iden"] = create_int_feature([feature.int_iden])
-    tf_example = tf.train.Example(features=tf.train.Features(feature=features))
-    writer.write(tf_example.SerializeToString())
-  writer.close()
-
-
-def _save_data(examples, label_names, max_seq_len, tokenizer, tfrecord_file, meta_data_file):
-  """Saves preprocessed data and other assets into files."""
-  # Converts examples into preprocessed features and saves in tfrecord_file.
-  file_based_convert_examples_to_features(examples, label_names, max_seq_len, tokenizer, tfrecord_file)
-
-  # Generates and saves meta data in meta_data_file.
-  meta_data = {
-      'size': len(examples),
-      'num_classes': len(label_names),
-      'index_to_label': label_names
-  }
-  file_util.write_json_file(meta_data_file, meta_data)
-
 def build_vocab_tokenizer(model_uri, do_lower_case):
   """Builds the class. Used for lazy initialization."""
   vocab_file = os.path.join(model_uri, 'assets', 'vocab.txt')
@@ -437,707 +316,115 @@ def codes_to_texts(codes_lines, refinfo):
 
   return text_lines, word_lines, code_lines
 
-
-
-def from_codes(filename,
-             text_column,
-             label_column,
-             model_uri,
-             max_seq_len,
-             refinfo,
-             do_lower_case=True,
-             fieldnames=None,
-             is_training=True,
-             delimiter=',',
-             quotechar='"',
-             shuffle=False,
-             cache_dir=None):
-  """Loads text with labels from the csv file and preproecess text according to `model_spec`.
-  Args:
-    filename: Name of the file.
-    text_column: String, Column name for input text.
-    label_column: String, Column name for labels.
-    fieldnames: A sequence, used in csv.DictReader. If fieldnames is omitted,
-      the values in the first row of file f will be used as the fieldnames.
-    model_spec: Specification for the model.
-    is_training: Whether the loaded data is for training or not.
-    delimiter: Character used to separate fields.
-    quotechar: Character used to quote fields containing special characters.
-    shuffle: boolean, if shuffle, random shuffle data.
-    cache_dir: The cache directory to save preprocessed data. If None,
-      generates a temporary directory to cache preprocessed data.
-  Returns:
-    TextDataset containing text, labels and other related info.
-  """
-  csv_name = os.path.basename(filename)
-
-  vocab_file, tokenizer = build_vocab_tokenizer(model_uri, do_lower_case)
-
-  is_cached, tfrecord_file, meta_data_file = get_cache_info(cache_dir, csv_name)
-
-  print("tfrecord file: %s" % tfrecord_file)
-
-  # If cached, directly loads data from cache directory.
-  if is_cached:
-    return _load(tfrecord_file, meta_data_file, max_seq_len)
-
-#  lines = read_csv(filename, fieldnames, delimiter, quotechar)
-  random.seed(global_seed)
-  lines = readFile(filename)
-  text_lines, word_lines, code_lines = codes_to_texts(lines, refinfo)
-  if shuffle:
-    random.shuffle(text_lines)
-
-  # Gets labels.
-  label_set = set()
-  for line in text_lines:
-    label_set.add(line[1])
-  label_names = sorted(label_set)
-
-  # Generates text examples from csv file.
-  examples = []
-
-  for i, line in enumerate(text_lines):
-    text, label = line[0], line[1]
-    guid = '%s-%d' % (csv_name, i)
-    examples.append(InputExample(guid, text, None, label))
-
-  # Saves preprocessed data and other assets into files.
-  _save_data(examples, label_names, max_seq_len, tokenizer, tfrecord_file, meta_data_file)
-
-  # Loads data from cache directory.
-  return _load(tfrecord_file, meta_data_file, max_seq_len)
-
-
-def from_csv(filename,
-             text_column,
-             label_column,
-             model_uri,
-             max_seq_len,
-             do_lower_case=True,
-             fieldnames=None,
-             is_training=True,
-             delimiter=',',
-             quotechar='"',
-             shuffle=False,
-             cache_dir=None,
-             include_sample_weight=False):
-  """Loads text with labels from the csv file and preproecess text according to `model_spec`.
-  Args:
-    filename: Name of the file.
-    text_column: String, Column name for input text.
-    label_column: String, Column name for labels.
-    fieldnames: A sequence, used in csv.DictReader. If fieldnames is omitted,
-      the values in the first row of file f will be used as the fieldnames.
-    model_spec: Specification for the model.
-    is_training: Whether the loaded data is for training or not.
-    delimiter: Character used to separate fields.
-    quotechar: Character used to quote fields containing special characters.
-    shuffle: boolean, if shuffle, random shuffle data.
-    cache_dir: The cache directory to save preprocessed data. If None,
-      generates a temporary directory to cache preprocessed data.
-  Returns:
-    TextDataset containing text, labels and other related info.
-  """
-  csv_name = os.path.basename(filename)
-
-  vocab_file, tokenizer = build_vocab_tokenizer(model_uri, do_lower_case)
-
-  is_cached, tfrecord_file, meta_data_file = get_cache_info(cache_dir, csv_name)
-
-  print("tfrecord file: %s" % tfrecord_file)
-
-  # If cached, directly loads data from cache directory.
-  if is_cached:
-    return _load(tfrecord_file, meta_data_file, max_seq_len)
-
-  lines = read_csv(filename, fieldnames, delimiter, quotechar)
-  if shuffle:
-    random.shuffle(lines)
-
-  # Gets labels.
-  label_set = set()
-  for line in lines:
-    label_set.add(line[label_column])
-  label_names = sorted(label_set)
-
-  # Generates text examples from csv file.
-  examples = []
-  for i, line in enumerate(lines):
-      text, label = line[text_column], line[label_column]
-      guid = '%s-%d' % (csv_name, i)
-      examples.append(InputExample(guid, text, None, label))
-
-  # Saves preprocessed data and other assets into files.
-  _save_data(examples, label_names, max_seq_len, tokenizer, tfrecord_file, meta_data_file)
-
-  # Loads data from cache directory.
-  return _load(tfrecord_file, meta_data_file, max_seq_len)
-
-def gen_dataset(dataset,
-                batch_size=1,
-                is_training=False,
-                shuffle=False,
-                drop_remainder=False):
-  """Generate a shared and batched tf.data.Dataset for training/evaluation.
-  Args:
-    batch_size: A integer, the returned dataset will be batched by this size.
-    is_training: A boolean, when True, the returned dataset will be optionally
-      shuffled and repeated as an endless dataset.
-    shuffle: A boolean, when True, the returned dataset will be shuffled to
-      create randomness during model training.
-    input_pipeline_context: A InputContext instance, used to shared dataset
-      among multiple workers when distribution strategy is used.
-    preprocess: A function taking three arguments in order, feature, label and
-      boolean is_training.
-    drop_remainder: boolean, whether the finaly batch drops remainder.
-  Returns:
-    A TF dataset ready to be consumed by Keras model.
-  """
-  ds = dataset
-  if is_training:
-    if shuffle:
-      buffer_size = 3 * batch_size
-      ds = ds.shuffle(buffer_size=buffer_size)
-
-  ds = ds.batch(batch_size, drop_remainder=drop_remainder)
-  ds = ds.prefetch(tf.data.AUTOTUNE)
-  return ds
-
-# Step 2. Load the training and test data, then preprocess them according to a specific model_spec.
-
-def prepare_dataset(args, refinfo):
-
-    train_file_name = os.path.join(args.eval_dir, args.train_file)
-#    train_data, train_meta_data = from_csv(
-    train_data, train_meta_data = from_codes(
-          filename=train_file_name,
-          text_column='ps_pi_as_si_desc_c_mml_c',
-          label_column='label',
-          delimiter='\t',
-          is_training=True,
-          cache_dir=args.eval_dir,
-          model_uri=args.init_model,
-          max_seq_len=args.max_seq_len,
-          shuffle=True, 
-          refinfo=refinfo)
-    train_ds = gen_dataset(train_data, args.train_batch_size, is_training=True)
-    print(train_meta_data)
+def get_single_feature(args, text, label, label_map):
     
-    eval_file_name = os.path.join(args.eval_dir, args.eval_file)
-#    eval_data, eval_meta_data = from_csv(
-    eval_data, eval_meta_data = from_codes(
-          filename=eval_file_name,
-          text_column='ps_pi_as_si_desc_c_mml_c',
-          label_column='label',
-          delimiter='\t',
-          is_training=False,
-          cache_dir=args.eval_dir,
-          model_uri=args.init_model,
-          max_seq_len=args.max_seq_len,
-          shuffle=False,
-          refinfo=refinfo)
-    validation_ds = gen_dataset(eval_data, args.eval_batch_size, is_training=False)
-    print(eval_meta_data)
+    label_id = label_map[label]
+    _, tokenizer = build_vocab_tokenizer(args.init_model, do_lower_case = True)
+    tokens_a = tokenizer.tokenize(text)
+    if len(tokens_a) > args.max_seq_len - 2:
+      tokens_a = tokens_a[0:(args.max_seq_len - 2)]    
+
+    tokens = []
+    segment_ids = []
+    tokens.append("[CLS]")
+    segment_ids.append(0)
+    for token in tokens_a:
+      tokens.append(token)
+      segment_ids.append(0)
+    tokens.append("[SEP]")
+    segment_ids.append(0)    
+
+    input_ids = tokenizer.convert_tokens_to_ids(tokens)
+    input_mask = [1] * len(input_ids)
+    while len(input_ids) < args.max_seq_len:
+      input_ids.append(0)
+      input_mask.append(0)
+      segment_ids.append(0)
+
+    assert len(input_ids) == args.max_seq_length
+    assert len(input_mask) == args.max_seq_length
+    assert len(segment_ids) == args.max_seq_length
+
+    return InputFeatures(
+        input_ids=input_ids,
+        input_mask=input_mask,
+        segment_ids=segment_ids,
+        label_id=label_id)
+
+def get_features(args, lines: list, label_list):
     
-    test_file_name = os.path.join(args.eval_dir, args.test_file)
-#    test_data, test_meta_data = from_csv(
-    test_data, test_meta_data = from_codes(
-          filename=test_file_name,
-          text_column='ps_pi_as_si_desc_c_mml_c',
-          label_column='label',
-          delimiter='\t',
-          is_training=False,
-          cache_dir=args.eval_dir,
-          model_uri=args.init_model,
-          max_seq_len=args.max_seq_len,
-          shuffle=False,
-          refinfo=refinfo)
-#          include_sample_weight=args.include_sample_weight)
-    test_ds = gen_dataset(test_data, args.test_batch_size, is_training=False)
-    print(test_meta_data)
-   
-    return train_ds, train_meta_data, validation_ds, eval_meta_data, test_ds, test_meta_data
+#    meta_data = file_util.load_json_file(args.meta_data_file)
 
-def create_classifier_model(bert_config,
-                            num_labels,
-                            max_seq_length,
-                            initializer=None,
-                            hub_module_url=None,
-                            hub_module_trainable=True,
-                            is_tf2=True):
-  """BERT classifier model in functional API style.
-  Construct a Keras model for predicting `num_labels` outputs from an input with
-  maximum sequence length `max_seq_length`.
-  Args:
-    bert_config: BertConfig, the config defines the core Bert model.
-    num_labels: integer, the number of classes.
-    max_seq_length: integer, the maximum input sequence length.
-    initializer: Initializer for the final dense layer in the span labeler.
-      Defaulted to TruncatedNormal initializer.
-    hub_module_url: TF-Hub path/url to Bert module.
-    hub_module_trainable: True to finetune layers in the hub module.
-    is_tf2: boolean, whether the hub module is in TensorFlow 2.x format.
-  Returns:
-    Combined prediction model (words, mask, type) -> (one-hot labels)
-    BERT sub-model (words, mask, type) -> (bert_outputs)
-  """
-  if initializer is None:
-    initializer = tf.keras.initializers.TruncatedNormal(
-        stddev=bert_config.initializer_range, seed=global_seed)
+    feature_list = []
+    for idx, line in enumerate(lines):
+        text, label = line.split("~|~")[0], line.split("~|~")[1]
+        feature = get_single_feature(text, label, label_map)
+        feature_list.append(feature)
 
-  input_word_ids = tf.keras.layers.Input(
-      shape=(max_seq_length,), dtype=tf.int32, name='input_word_ids')
-  input_mask = tf.keras.layers.Input(
-      shape=(max_seq_length,), dtype=tf.int32, name='input_mask')
-  input_type_ids = tf.keras.layers.Input(
-      shape=(max_seq_length,), dtype=tf.int32, name='input_type_ids')
-
-  print("bert_trainable: %s" % hub_module_trainable)
-
-  bert_model = hub.KerasLayer(hub_module_url, trainable=hub_module_trainable)
-  model_outputs = bert_model({
-      'input_word_ids': input_word_ids,
-      'input_mask': input_mask,
-      'input_type_ids': input_type_ids
-  })
-  pooled_output = model_outputs['pooled_output']
-  
-#  pooled_output, _ = bert_model([input_word_ids, input_mask, input_type_ids])
-  output = tf.keras.layers.Dropout(rate=bert_config.hidden_dropout_prob)(
-      pooled_output)
-  output = tf.keras.layers.Dense(
-      num_labels,
-      kernel_initializer=initializer,
-      name='output',
-      activation='softmax',
-      dtype=tf.float32)(
-          output)
-
-  return tf.keras.Model(
-      inputs=[input_word_ids, input_mask, input_type_ids],
-      outputs=output), bert_model
-
-def create_model(num_classes,
-                 optimizer='adam',
-                 with_loss_and_metrics=True,
-                 dropout_rate=0.1,
-                 args=None):
-  """Creates the keras model."""
-  bert_config = bert_configs.BertConfig(
-        0,
-        initializer_range = 0.02,
-        hidden_dropout_prob = dropout_rate)
-  bert_model, _ = create_classifier_model(
-      bert_config,
-      num_classes,
-      max_seq_length = args.max_seq_len,
-      hub_module_url=args.init_model,
-      hub_module_trainable=args.bert_trainable,
-#      hub_module_trainable=True,
-      is_tf2=True)
-
-  # Defines evaluation metrics function, which will create metrics in the
-  # correct device and strategy scope.
-  def top1_metric_fn():
-    return tf.keras.metrics.SparseTopKCategoricalAccuracy(
-        k = 1, name = 'top1_accuracy', dtype=tf.float32)
-
-  def top3_metric_fn():
-    return tf.keras.metrics.SparseTopKCategoricalAccuracy(
-        k = 3, name = 'top3_accuracy', dtype=tf.float32)
-
-  def top5_metric_fn():
-    return tf.keras.metrics.SparseTopKCategoricalAccuracy(
-        k = 5, name = 'top5_accuracy', dtype=tf.float32)
-
-
-  # Defines evaluation metrics function, which will create metrics in the
-  # correct device and strategy scope.
-#  def metric_fn():
-#    return tf.keras.metrics.SparseCategoricalAccuracy(
-#        'test_accuracy', dtype=tf.float32)
-
-  if with_loss_and_metrics:
-    # Add loss and metrics in the keras model.
-    bert_model.compile(
-        optimizer=optimizer,
-#        loss=tfa.losses.SigmoidFocalCrossEntropy(),
-        loss=tf.keras.losses.SparseCategoricalCrossentropy(),
-        metrics=[top1_metric_fn(), top3_metric_fn(), top5_metric_fn()])
-
-  return bert_model
-
-def prepare_model(train_ds, train_meta_data, validation_ds, args):
-    
-    steps_per_epoch = train_meta_data['size'] // args.train_batch_size
-    train_ds = train_ds.take(steps_per_epoch)
-    total_steps = steps_per_epoch * args.train_epoch
-    logging.info("total training steps: %s" % total_steps)
-    warmup_steps = int(total_steps * 0.01)
-    initial_lr = 3e-5
-    dropout_rate=0.1
-    seq_len=args.max_seq_len
-    num_classes = train_meta_data['num_classes']
-    model_dir = args.model_dir
-    optimizer = optimization.create_optimizer(initial_lr, total_steps, warmup_steps)
-    bert_model = create_model(num_classes, optimizer, dropout_rate=dropout_rate, args=args)
-
-    print("%s saved models will be saved in %s" % (args.train_epoch, model_dir))
-#    print("saving filepath directory: %s" % model_dir)
-    saved_model_dir = os.path.join(model_dir, "{epoch:04d}")
-    cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=saved_model_dir,
-                                            monitor='val_top3_accuracy',
-                                            save_weights_only=False,
-                                            verbose=1,
-                                            save_best_only=False,
-                                            save_freq='epoch')
-    return bert_model, cp_callback
-
-def model_fit(bert_model, train_ds, validation_ds, cp_callback, train_epoch):
-
-    print("start training...")
-
-    for i in range(train_epoch):
-            bert_model.fit(
-                x=train_ds,
-                initial_epoch=i,
-                epochs=i + 1,
-                validation_data=validation_ds,
-                callbacks=[cp_callback])
-
-    print("finish training...")
-    return bert_model
-
-## Step 4. Evaluate multiple saved models with the test data.
-def model_test(train_ds, train_meta_data, validation_ds, test_ds, args):
-
-    def top1_metric_fn():
-      return tf.keras.metrics.SparseTopKCategoricalAccuracy(
-        k = 1, name = 'top1_accuracy', dtype=tf.float32)
-    
-    def top3_metric_fn():
-      return tf.keras.metrics.SparseTopKCategoricalAccuracy(
-        k = 3, name = 'top3_accuracy', dtype=tf.float32)
-    
-    def top5_metric_fn():
-      return tf.keras.metrics.SparseTopKCategoricalAccuracy(
-        k = 5, name = 'top5_accuracy', dtype=tf.float32)
-
-    model_dir_list = tf.io.gfile.listdir(args.model_dir)
-    model_dir_list.sort()
-
-    best_top3_score = 0.0
-    best_bert_model = None
-    best_bert_idx = -1
-
-    for idx, ckpt_model_dir in enumerate(model_dir_list):
-        ckpt_model = os.path.join(args.model_dir, ckpt_model_dir)
-#        args.init_model = ckpt_model
-#        print("testing the model: %s" % args.init_model)
-        test_data_size = len(list(test_ds))
-        print("testing the model: %s with size %s" % (ckpt_model, test_data_size))
-        bert_model = tf.keras.models.load_model(ckpt_model, compile=False)
-        bert_model.compile(
-                optimizer='adam',
-                loss=tf.keras.losses.SparseCategoricalCrossentropy(),
-                metrics=[top1_metric_fn(), top3_metric_fn(), top5_metric_fn()])
-
-        # measure the inference latency
-
-        time_s = datetime.now()
-        eval_result = bert_model.evaluate(test_ds)
-        time_t = datetime.now() - time_s
-        time_a = time_t / test_data_size
-        print("inference time of model %s on server is %s" % (ckpt_model, time_a))
-
-        print("test result %s" % eval_result)
-        if eval_result[2] > best_top3_score:
-            best_top3_score = eval_result[2]
-            best_bert_model = bert_model
-            best_bert_idx = idx
+    return feature_list
         
-#        best_bert_model = bert_model
-    print("selected best model: %s" % best_bert_idx)
-    return best_bert_model
+def evaluate_concept_matching(args):
+    
+    fitted_c_list, fitted_mmlc_list, fitted_text_list, nemsis_id_list = getFittedInfo()
+    print("fitted_c_list %s, fitted_mmlc_list %s, fitted_text_list %s, nemsis_id_list %s" % (len(fitted_c_list), len(fitted_mmlc_list), len(fitted_text_list), len(nemsis_id_list)))
+#    print("nemsis_id_list: %s" % nemsis_id_list)
 
-# Step 5. Export as a TensorFlow Lite model.
+    _, tokenizer = build_vocab_tokenizer(args.init_model, do_lower_case = True)
+    label_map = {}
+    for i, label in enumerate(nemsis_id_list):
+        label_map[label] = i
 
-def model_save_tflite(bert_model, args):
-    def _get_params(f, **kwargs):
-      """Gets parameters of the function `f` from `**kwargs`."""
-      parameters = inspect.signature(f).parameters
-      f_kwargs = {}  # kwargs for the function `f`
-      for param_name in parameters.keys():
-        if param_name in kwargs:
-          f_kwargs[param_name] = kwargs.pop(param_name)
-      return f_kwargs, kwargs
-    
-    logging.info("Converting the tensorflow model to the tflite model")
-    
-    export_dir = os.path.join(args.eval_dir, "export_tflite")
-#    export_dir = 'export_tflite'
-    if not tf.io.gfile.exists(export_dir):
-      tf.io.gfile.makedirs(export_dir)
-    #with tf.io.gfile.GFile(tflite_filepath, 'wb') as f:
-    #  f.write(tflite_model)
-    
-    tflite_filename = args.tflite_name
-    tflite_filepath = os.path.join(export_dir, tflite_filename)
-    quant_config = quant_configs.QuantizationConfig.for_dynamic()
-    quant_config.experimental_new_quantizer = True
-    print(bert_model.inputs)
+    lines = util.readFile(args.test_file)
+    ivs = np.zeros((len(lines), len(tokenizer.vocab)), dtype=np.int32)
+    input_labels = []
+    input_label_ids = np.zeros(len(lines), dtype=np.int32)
+    input_texts = []
+    for idx, line in enumerate(lines):
+        text, label = line.split("~|~")[0], line.split("~|~")[1]    
+        tokens = tokenizer.tokenize(text)
+#        if idx == 0:
+#            print("idx = %s, tokens(%s): %s" % (idx, len(tokens), tokens))
+        token_ids = tokenizer.convert_tokens_to_ids(tokens)
+        for token_id in token_ids:
+            ivs[idx, token_id] += 1
 
-    for model_input in bert_model.inputs:
-#        new_shape = [args.test_batch_size] + model_input.shape[1:]
-        new_shape = [1] + model_input.shape[1:]
-        model_input.set_shape(new_shape)    
-        
-    print(bert_model.inputs)
-    
-    #temp_dir_name = tempfile.TemporaryDirectory()
-    with tempfile.TemporaryDirectory() as temp_dir_name:
-        print(temp_dir_name)
-        save_path = os.path.join(temp_dir_name, 'saved_model')
-        bert_model.save(save_path, include_optimizer=False, save_format='tf')
-        converter = tf.lite.TFLiteConverter.from_saved_model(save_path)
-    
-        supported_ops=(tf.lite.OpsSet.TFLITE_BUILTINS,)
-    #    q_cfg = quant_config.QuantizationConfig()
-        converter = quant_config.get_converter_with_quantization(converter, preprocess=None)
-        converter.target_spec.supported_ops = supported_ops
-    
-        tflite_model = converter.convert()
-    
-        with tf.io.gfile.GFile(tflite_filepath, 'wb') as f:
-          f.write(tflite_model)
-        logging.info("TensorFlow Lite model exported successfully: %s" % tflite_filepath)
-    
-    
-    #def build_vocab_tokenizer(model_uri, do_lower_case):
-    
-    with tempfile.TemporaryDirectory() as temp_dir:                                            
-      logging.info('Vocab file and label file are inside the '
-                                'TFLite model with metadata.')
-      vocab_filepath = os.path.join(temp_dir, 'vocab.txt')
-      vocab_file, _ = build_vocab_tokenizer(args.init_model, True)
-      tf.io.gfile.copy(vocab_file, vocab_filepath, overwrite=True)
-      logging.info('Saved vocabulary in %s.', vocab_filepath)
-    #  self.model_spec.save_vocab(vocab_filepath)
-      label_filepath = os.path.join(temp_dir, 'labels.txt')
-      with tf.io.gfile.GFile(label_filepath, 'w') as f:
-        f.write('\n'.join(test_meta_data['index_to_label']))  
-    #  self._export_labels(label_filepath)
-    
-    #  export_dir = os.path.dirname(tflite_filepath)
-    #  if isinstance(self.model_spec, text_spec.BertClassifierModelSpec):
-      model_info = bert_metadata_writer.ClassifierSpecificInfo(
-          name= 'bert text classifier',
-          version='v2',
-          description=bert_metadata_writer.DEFAULT_DESCRIPTION,
-    #      input_names=bert_metadata_writer.bert_qa_inputs(
-    #          ids_name=model_spec.tflite_input_name['ids'],
-    #          mask_name=model_spec.tflite_input_name['mask'],
-    #          segment_ids_name=model_spec.tflite_input_name['segment_ids']),
-          input_names=bert_metadata_writer.bert_qa_inputs(
-              ids_name='serving_default_input_word_ids:0',
-              mask_name='serving_default_input_mask:0',
-              segment_ids_name='serving_default_input_type_ids:0'),
-          tokenizer_type=bert_metadata_writer.Tokenizer.BERT_TOKENIZER,
-          vocab_file=vocab_filepath,
-          label_file=label_filepath)
-    
-    
-      
-    #  model_info = _get_bert_model_info(self.model_spec, vocab_filepath,
-    #                                      label_filepath)
-      populator = bert_metadata_writer.MetadataPopulatorForBertTextClassifier(
-            tflite_filepath, export_dir, model_info)
-    #  elif isinstance(self.model_spec, text_spec.AverageWordVecModelSpec):
-    #    model_info = _get_model_info(self.model_spec.name)
-    #    populator = metadata_writer.MetadataPopulatorForTextClassifier(
-    #        tflite_filepath, export_dir, model_info, label_filepath,
-    #        vocab_filepath)
-    #  else:
-    #    raise ValueError('Model Specification is not supported to writing '
-    #                     'metadata into TFLite. Please set '
-    #                     '`with_metadata=False` or write metadata by '
-    #                     'yourself.')
-    #  populator.populate(export_metadata_json_file=False)
-      populator.populate(False)
-    
-    
-    #model.export(export_dir='export_tflite')
-    
-    #time_t = datetime.now() - time_s
-    #print("This run takes %s" % time_t)
+        non_zero_cols = []
+#        if idx == 0:
+#            for col, val in enumerate(ivs[idx]):
+#                if val != 0:
+#                    non_zero_cols.append(col)
+#            print("idx = %s, col indices(%s): %s" % (idx, len(non_zero_cols), non_zero_cols))
+        input_labels.append(label)
+        label_id = label_map[label]
+        input_label_ids[idx] = label_id
+    print(input_label_ids)
+    print("ivs shape ", ivs.shape)
 
-## Step 6. predict a saved models with the test data.
-#def model_predict(train_ds, train_meta_data, validation_ds, test_ds, args):
-#
-#    example_label_ids = []
-#    label_names_= util.readFile('eval_pretrain/no-fitted_label_names.txt')
-#    label_map = dict()
-#    for i, label in enumerate(label_names_):
-#        label_map[label] = i
-#
-#    csv_lines = tfutil.read_csv(input_file='eval_pretrain/no-fitted_desc_test.tsv', delimiter='\t')
-#    for i, line in enumerate(csv_lines):
-#        label=line['label']
-#        example_label_ids.append(label_map[label])
-#
-#
-#    ckpt_model = args.model_dir
-#    test_data_size = len(list(test_ds))
-#    print("predicting the model: %s with size %s" % (ckpt_model, test_data_size))
-#    bert_model = tf.keras.models.load_model(ckpt_model, compile=False)
-#
-#    def top1_metric_fn():
-#      return tf.keras.metrics.SparseTopKCategoricalAccuracy(
-#        k = 1, name = 'top1_accuracy', dtype=tf.float32)
-#    
-#    def top3_metric_fn():
-#      return tf.keras.metrics.SparseTopKCategoricalAccuracy(
-#        k = 3, name = 'top3_accuracy', dtype=tf.float32)
-#    
-#    def top5_metric_fn():
-#      return tf.keras.metrics.SparseTopKCategoricalAccuracy(
-#        k = 5, name = 'top5_accuracy', dtype=tf.float32)
-#
-#    bert_model.compile(
-#            optimizer='adam',
-#            loss=tf.keras.losses.SparseCategoricalCrossentropy(),
-#            metrics=[top1_metric_fn(), top3_metric_fn(), top5_metric_fn()])
-#
-#    # measure the predict latency
-#    time_s = datetime.now()
-#    y_pred = bert_model.predict(test_ds)
-#    time_t = datetime.now() - time_s
-#    time_a = time_t / test_data_size
-#    print("predict time of model %s on server is %s" % (ckpt_model, time_a))
-#
-#
-#    print("predict result shape:", y_pred.shape)
-#    top1_prob, top1_indices = tf.math.top_k(y_pred, k=1)
-#    top1_prob = top1_prob.numpy()
-#    top1_prob = top1_prob.tolist()
-#    top1_indices = top1_indices.numpy()
-#    top1_indices = top1_indices.tolist()
-#
-#    assert(len(top1_indices) == len(example_label_ids))
-#    total_count = 0
-#    top1 = 0.0
-#    for (i, topk_index) in enumerate(top1_indices):
-#        true_label_id = example_label_ids[i]
-#        if topk_index[0] == true_label_id:
-#            top1 += 1.0
-#        total_count += 1
-#    print("top1 accuracy: ", top1/total_count)
-#
-#    c_matrix = tf.math.confusion_matrix(example_label_ids, top1_indices, num_classes = len(label_map))
-#    c_matrix = c_matrix.numpy()
-#
-#    # args.model_dir is a dir
-#    model_name = args.model_dir.split('/')[-3]
-#    with open(os.path.join("confusion_matrix", model_name),"w") as f:
-#        mywriter = csv.writer(f, delimiter= ',')
-#        mywriter.writerows(c_matrix)
-#
-## Step 7. Evaluate target tf model with the test data.
-def evaluate_test(train_ds, train_meta_data, validation_ds, test_ds, args):
+    pvs = np.zeros((len(nemsis_id_list), len(tokenizer.vocab)), dtype=np.int32)
+    for idx, text in enumerate(fitted_text_list):
+        tokens = tokenizer.tokenize(text)
+        token_ids = tokenizer.convert_tokens_to_ids(tokens)
+        for token_id in token_ids:
+            pvs[idx, token_id] += 1
+    print("pvs shape ", pvs.shape)
 
-    def top1_metric_fn():
-      return tf.keras.metrics.SparseTopKCategoricalAccuracy(
-        k = 1, name = 'top1_accuracy', dtype=tf.float32)
-    
-    def top3_metric_fn():
-      return tf.keras.metrics.SparseTopKCategoricalAccuracy(
-        k = 3, name = 'top3_accuracy', dtype=tf.float32)
-    
-    def top5_metric_fn():
-      return tf.keras.metrics.SparseTopKCategoricalAccuracy(
-        k = 5, name = 'top5_accuracy', dtype=tf.float32)
+#    t_top1, t_top3, t_top5 = get_top_score(pvs, ivs, nemsis_id_list, input_label_ids, args)
+    t_top1, t_top3, t_top5 = get_top_score(pvs, ivs, nemsis_id_list, input_labels, args)
+    print("input token topk: ", t_top1, t_top3, t_top5)
 
-    model_dir_list = tf.io.gfile.listdir(args.model_dir)
-    model_dir_list.sort()
-
-    best_top3_score = 0.0
-    best_bert_model = None
-    best_bert_idx = -1
-
-    for idx, ckpt_model_dir in enumerate(model_dir_list):
-        ckpt_model = os.path.join(args.model_dir, ckpt_model_dir)
-#        args.init_model = ckpt_model
-#        print("testing the model: %s" % args.init_model)
-        test_data_size = len(list(test_ds))
-        print("testing the model: %s with size %s" % (ckpt_model, test_data_size))
-        bert_model = tf.keras.models.load_model(ckpt_model, compile=False)
-        bert_model.compile(
-                optimizer='adam',
-                loss=tf.keras.losses.SparseCategoricalCrossentropy(),
-                metrics=[top1_metric_fn(), top3_metric_fn(), top5_metric_fn()])
-
-        # measure the inference latency
-
-        time_s = datetime.now()
-        eval_result = bert_model.evaluate(test_ds)
-        time_t = datetime.now() - time_s
-        time_a = time_t / test_data_size
-        print("inference time of model %s on server is %s" % (ckpt_model, time_a))
-
-        print("test result %s" % eval_result)
-        if eval_result[2] > best_top3_score:
-            best_top3_score = eval_result[2]
-            best_bert_model = bert_model
-            best_bert_idx = idx
-        
-#        best_bert_model = bert_model
-    print("selected best model: %s" % best_bert_idx)
-    return best_bert_model
-
-    
 if __name__ == "__main__":
     
     time_s = datetime.now()
 
     parser = argparse.ArgumentParser(description = "control the functions for EMSBert")
-    parser.add_argument("--eval_dir", action='store', type=str, default = "eval_pretrain", help="directory containing resources for specific purposes")
-    parser.add_argument("--init_model", action='store', type=str, default = "/home/liuyi/tflite_experimental/train_pipeline_standalone/init_models/experts_bert_pubmed_2", help="directory storing the different initialization models")
-    parser.add_argument("--cuda_device", action='store', type=str, default = "1", help="indicate the cuda device number")
-    parser.add_argument("--max_seq_len", type=int, default=128, help="maximum sequence length")
-    parser.add_argument("--train_file", action='store', type=str, default="train.tsv", help="train file name")
-    parser.add_argument("--train_batch_size", type=int, default=8, help="train batch size")
-    parser.add_argument("--eval_file", action='store', type=str, default="eval.tsv", help="eval file name")
-    parser.add_argument("--eval_batch_size", type=int, default=1, help="eval batch size")
-    parser.add_argument("--test_file", action='store', type=str, default="test.tsv", help="test file name")
-    parser.add_argument("--test_batch_size", type=int, default=1, help="test batch size")
-    parser.add_argument("--train_epoch", type=int, default=10, help="epochs for training")
 
-    parser.add_argument("--model_dir", action='store', type=str, default = 'saved_model', help = "indicate where to store the trained models")
-    parser.add_argument("--do_train", action='store_true', default=False, help="indicate whether to do training")
-    parser.add_argument("--do_test", action='store_true', default=False, help="indicate whether to do testing")
-    parser.add_argument("--save_tflite", action='store_true', default=False, help="indicate whether to save tflite models")
-    parser.add_argument("--tflite_name", action='store', type=str, default='model.tflite', help = "indicate the tflite model name")
-    parser.add_argument("--do_predict", action='store_true', default=False, help="indicate whether to do predict")
-    parser.add_argument("--bert_trainable", action='store_false', default=True, help="indicate whether we want to freeze the loaded bert model")
+    parser.add_argument("--init_model", action='store', type=str, default = "/home/liuyi/tflite_experimental/train_pipeline_standalone/init_models/mobilebert_en_uncased_L-24_H-128_B-512_A-4_F-4_OPT_1", help="directory storing the different initialization models")
+    parser.add_argument("--test_file", action='store', type=str, help = "indicate which file to test with models", required = True)
+    parser.add_argument("--metric", action='store', type=str, default = 'cosine', help = "indicate which similarity method will be used")
 
     args = parser.parse_args()
-    os.environ['CUDA_VISIBLE_DEVICES'] = args.cuda_device
-    refinfo = RefInfo()
 
-    train_ds, train_meta_data, validation_ds, eval_meta_data, test_ds, test_meta_data = prepare_dataset(args, refinfo)
-    bert_model, callbacks = prepare_model(train_ds, train_meta_data, validation_ds, args)
-    if args.do_train:
-        bert_model = model_fit(bert_model, train_ds, validation_ds, callbacks, args.train_epoch)
-    if args.do_test:
-#        model_test(bert_model, test_ds)
-        best_bert_model = model_test(train_ds, train_meta_data, validation_ds, test_ds, args)
-#        print("best_bert_model: ", best_bert_model)
-        if args.save_tflite:
-            model_save_tflite(best_bert_model, args)
-
-#    if args.do_predict:
-#        model_predict(train_ds, train_meta_data, validation_ds, test_ds, args)
+    evaluate_concept_matching(args)
 
     time_t = datetime.now() - time_s
     print("This run takes %s" % time_t)
