@@ -30,6 +30,8 @@ from scipy import spatial
 import Utils as util
 import math
 
+from threading import Thread
+
 global_seed = 1993
 
 
@@ -85,7 +87,7 @@ def computeSimilarity(tv, pvs, pids, metric = "cosine"):
         
     return ranking_list
 
-def get_top_score(pvs, tvs, pids, tids, args):
+def get_top_score(pvs, tvs, pids, tids, main_args):
     top1 = 0.0
     top3 = 0.0
     top5 = 0.0   
@@ -94,7 +96,7 @@ def get_top_score(pvs, tvs, pids, tids, args):
 
         tv = tvs[idx]
         tp = tids[idx]
-        ranking = computeSimilarity(tv, pvs, pids, metric = args.metric)
+        ranking = computeSimilarity(tv, pvs, pids, metric = main_args.metric)
         # rank
         candi_list, score_list = rank(ranking)[0], rank(ranking)[1]
 #        if idx == 0:
@@ -363,43 +365,49 @@ def get_features(args, lines: list, label_list):
 
     return feature_list
         
-def evaluate_concept_matching(args):
+#def tokenize_and_match(args):
+def tokenize_and_match(main_args, f_path, label_f_path):
     
     fitted_c_list, fitted_mmlc_list, fitted_text_list, nemsis_id_list = getFittedInfo()
     print("fitted_c_list %s, fitted_mmlc_list %s, fitted_text_list %s, nemsis_id_list %s" % (len(fitted_c_list), len(fitted_mmlc_list), len(fitted_text_list), len(nemsis_id_list)))
 #    print("nemsis_id_list: %s" % nemsis_id_list)
 
-    _, tokenizer = build_vocab_tokenizer(args.init_model, do_lower_case = True)
+    _, tokenizer = build_vocab_tokenizer(main_args.init_model, do_lower_case = True)
     label_map = {}
     for i, label in enumerate(nemsis_id_list):
         label_map[label] = i
 
-    lines = util.readFile(args.test_file)
+    lines = util.readFile(f_path)
     ivs = np.zeros((len(lines), len(tokenizer.vocab)), dtype=np.int32)
-    input_labels = []
-    input_label_ids = np.zeros(len(lines), dtype=np.int32)
+    input_labels = util.readFile(label_f_path)
+    assert len(lines) == len(input_labels)
+    input_label_ids = np.zeros(len(input_labels), dtype=np.int32)
+
     input_texts = []
     for idx, line in enumerate(lines):
-        text, label = line.split("~|~")[0], line.split("~|~")[1]    
+#        text, label = line.split("~|~")[0], line.split("~|~")[1]
+        text = line
+        label = input_labels[idx]
         tokens = tokenizer.tokenize(text)
 #        if idx == 0:
 #            print("idx = %s, tokens(%s): %s" % (idx, len(tokens), tokens))
         token_ids = tokenizer.convert_tokens_to_ids(tokens)
         for token_id in token_ids:
-            ivs[idx, token_id] += 1
+            ivs[idx, token_id] = 1
 
-        non_zero_cols = []
+#        non_zero_cols = []
 #        if idx == 0:
 #            for col, val in enumerate(ivs[idx]):
 #                if val != 0:
 #                    non_zero_cols.append(col)
 #            print("idx = %s, col indices(%s): %s" % (idx, len(non_zero_cols), non_zero_cols))
-        input_labels.append(label)
+#        input_labels.append(label)
         label_id = label_map[label]
         input_label_ids[idx] = label_id
-    print(input_label_ids)
+#    print(input_label_ids)
     print("ivs shape ", ivs.shape)
 
+    assert len(fitted_text_list) == len(nemsis_id_list)
     pvs = np.zeros((len(nemsis_id_list), len(tokenizer.vocab)), dtype=np.int32)
     for idx, text in enumerate(fitted_text_list):
         tokens = tokenizer.tokenize(text)
@@ -409,24 +417,118 @@ def evaluate_concept_matching(args):
     print("pvs shape ", pvs.shape)
 
 #    t_top1, t_top3, t_top5 = get_top_score(pvs, ivs, nemsis_id_list, input_label_ids, args)
-    t_top1, t_top3, t_top5 = get_top_score(pvs, ivs, nemsis_id_list, input_labels, args)
+    t_top1, t_top3, t_top5 = get_top_score(pvs, ivs, nemsis_id_list, input_labels, main_args)
     print("input token topk: ", t_top1, t_top3, t_top5)
+    return t_top1, t_top3, t_top5
+
+def tokens_generattor(main_args, f_path, label_f_path):
+
+    _, tokenizer = build_vocab_tokenizer(main_args.init_model, do_lower_case = True)
+    lines = readFile(f_path)
+    for line in lines:
+        line = line.strip()
+        true_text, pred_text = line.split("\t")[0].strip(), line.split("\t")[1].strip()
+        pred_token_str = " ".join(tokenizer.tokenize(pred_text))
+        trans_tokens_list.append(true_text)
+        trans_tokens_list.append(true_token_str)
+        trans_tokens_list.append(pred_text)
+        trans_tokens_list.append(pred_token_str)
+#    trans_tokens_file = "gc_" + spk + "_" + f + "_trans_tokens.txt"
+#    trans_tokens_file_path = os.path.join(main_args.token_files_dir, trans_tokens_file)
+#    writeListFile(trans_tokens_file_path, trans_tokens_list)
+#    print("write %s lines to %s" % (len(trans_tokens_list), trans_tokens_file_path))
+
+
+def match_token_for_spk_dir(main_args, spk_path):
+
+    # different from concepts generation, the code for all concepts are the same: cloud_transcription/true_text
+    files = [
+        "eval_GC_transcript_command_and_search.txt",
+        "eval_GC_transcript_default.txt",
+        "eval_GC_transcript_latest_long.txt",
+        "eval_GC_transcript_latest_short.txt",
+        "eval_GC_transcript_medical_conversation.txt",
+        "eval_GC_transcript_medical_dictation.txt",
+        "eval_GC_transcript_phone_call.txt",
+        "eval_GC_transcript_video.txt",
+        "sampled_signs_symptoms_100.txt"
+    ]
+
+    acc_lines = []
+    for idx, f in enumerate(files):
+#        f_base_name = f.split(".")[0]
+        f_path = os.path.join(spk_path, f)
+        label_f_path = os.path.join(spk_path, "labels.txt")
+        
+        assert os.path.isfile(f_path)
+        assert os.path.isfile(label_f_path)
+
+#        c_top1, c_top3, c_top5, mmlc_top1, mmlc_top3, mmlc_top5 = protocol_selection(main_args, mm_concept_f_path, mml_concept_f_path, label_f_path)
+        acc_line = []
+#        print("\n======= generating tokens for speaker : %s =============" % spk)
+        top_k_acc = tokenize_and_match(main_args, f_path, label_f_path)
+        for acc in top_k_acc:
+            acc_line.append(str(acc))
+        assert len(acc_line) == 3
+        acc_lines.append(",".join(acc_line))
+
+    assert len(acc_lines) == 9
+    acc_csv_name = os.path.join(spk_path, "token_match_" + main_args.metric + ".csv")
+    util.writeListFile(acc_csv_name, acc_lines)
+    print("write %s lines to %s" % (len(acc_lines), acc_csv_name))
+
+
+def match_for_dir(main_args):
+
+    main_dir = main_args.main_dir
+    spk_dirs = os.listdir(main_dir)
+    assert len(spk_dirs) == 7
+    spk_paths = []
+    for spk_dir in spk_dirs:
+        spk_path = os.path.join(main_dir, spk_dir)
+        spk_paths.append(spk_path)
+
+    threads_list = []
+    for thread_num in range(len(spk_dirs)):
+        print("match for speaker %s" % spk_paths[thread_num])
+        tmp_t = Thread(target = match_token_for_spk_dir, args=(main_args, spk_paths[thread_num]))
+        threads_list.append(tmp_t)
+        tmp_t.start()
+        print("thread %s start!" % thread_num)
+    for t in threads_list:
+        t.join()
+
 
 if __name__ == "__main__":
-    
-    time_s = datetime.now()
+
+    t_start = datetime.now()  
 
     parser = argparse.ArgumentParser(description = "control the functions for EMSBert")
-
     parser.add_argument("--init_model", action='store', type=str, default = "/home/liuyi/tflite_experimental/train_pipeline_standalone/init_models/mobilebert_en_uncased_L-24_H-128_B-512_A-4_F-4_OPT_1", help="directory storing the different initialization models")
-    parser.add_argument("--test_file", action='store', type=str, help = "indicate which file to test with models", required = True)
-    parser.add_argument("--metric", action='store', type=str, default = 'cosine', help = "indicate which similarity method will be used")
+    parser.add_argument("--metric", action='store', type=str, help="cosine, dot", required=True)
+    parser.add_argument("--main_dir", action='store', type=str, default="/home/liuyi/MetamapMatching/google_cloud")
 
-    args = parser.parse_args()
+    main_args = parser.parse_args()
+    
+    match_for_dir(main_args)
+    t_total = datetime.now() - t_start
+    print("\nThis run takes time: %s" % t_total) 
 
-    evaluate_concept_matching(args)
-
-    time_t = datetime.now() - time_s
-    print("This run takes %s" % time_t)
-
-   
+#if __name__ == "__main__":
+#    
+#    time_s = datetime.now()
+#
+#    parser = argparse.ArgumentParser(description = "control the functions for EMSBert")
+#
+#    parser.add_argument("--init_model", action='store', type=str, default = "/home/liuyi/tflite_experimental/train_pipeline_standalone/init_models/mobilebert_en_uncased_L-24_H-128_B-512_A-4_F-4_OPT_1", help="directory storing the different initialization models")
+#    parser.add_argument("--test_file", action='store', type=str, help = "indicate which file to test with models", required = True)
+#    parser.add_argument("--metric", action='store', type=str, default = 'cosine', help = "indicate which similarity method will be used")
+#
+#    args = parser.parse_args()
+#
+#    evaluate_concept_matching(args)
+#
+#    time_t = datetime.now() - time_s
+#    print("This run takes %s" % time_t)
+#
+#   
