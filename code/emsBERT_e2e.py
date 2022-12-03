@@ -38,35 +38,22 @@ def readFile(file_path, encoding = None):
     f.close()
     return res
 
+def writeListFile(file_path, output_list):
+    f = open(file_path, mode = "w")
+    output_str = "\n".join(output_list)
+    f.write(output_str)
+    f.close()
+
 class InputExample(object):
   """A single training/test example for simple sequence classification."""
 
   def __init__(self,
                guid,
                text_a,
-               text_b=None,
-               label=None,
-               int_iden=None):
-    """Constructs a InputExample.
-
-    Args:
-      guid: Unique id for the example.
-      text_a: string. The untokenized text of the first sequence. For single
-        sequence tasks, only this sequence must be specified.
-      text_b: (Optional) string. The untokenized text of the second sequence.
-        Only must be specified for sequence pair tasks.
-      label: (Optional) string. The label of the example. This should be
-        specified for train and dev examples, but not for test examples.
-      weight: (Optional) float. The weight of the example to be used during
-        training.
-      int_iden: (Optional) int. The int identification number of example in the
-        corpus.
-    """
+               label=None):
     self.guid = guid
     self.text_a = text_a
-    self.text_b = text_b
     self.label = label
-    self.int_iden = int_iden
 
 
 class InputFeatures(object):
@@ -392,22 +379,28 @@ def file_based_convert_examples_to_features(examples,
   writer.close()
 
 
-def _save_data(examples, label_names, max_seq_len, tokenizer, tfrecord_file, meta_data_file):
-  """Saves preprocessed data and other assets into files."""
+def  _save_data(true_examples, transcribed_examples, max_seq_len, tokenizer, true_tfrecord_file, transcribed_tfrecord_file, meta_data_file)
+#def _save_data(examples, label_names, max_seq_len, tokenizer, tfrecord_file, meta_data_file):
+#  """Saves preprocessed data and other assets into files."""
   # Converts examples into preprocessed features and saves in tfrecord_file.
-  file_based_convert_examples_to_features(examples, label_names, max_seq_len, tokenizer, tfrecord_file)
+
+  meta_data = file_util.load_json_file(meta_data_file)
+  label_names = meta_data["index_to_label"]
+
+  file_based_convert_examples_to_features(true_examples, label_names, max_seq_len, tokenizer, true_tfrecord_file)
+  file_based_convert_examples_to_features(transcribed_examples, label_names, max_seq_len, tokenizer, transcribed_tfrecord_file)
 
   # Generates and saves meta data in meta_data_file.
-  meta_data = {
-      'size': len(examples),
-      'num_classes': len(label_names),
-      'index_to_label': label_names
-  }
-  file_util.write_json_file(meta_data_file, meta_data)
+#  meta_data = {
+#      'size': len(examples),
+#      'num_classes': len(label_names),
+#      'index_to_label': label_names
+#  }
+#  file_util.write_json_file(meta_data_file, meta_data)
 
-def build_vocab_tokenizer(model_uri, do_lower_case):
-  """Builds the class. Used for lazy initialization."""
-  vocab_file = os.path.join(model_uri, 'assets', 'vocab.txt')
+def build_vocab_tokenizer(do_lower_case):
+#  """Builds the class. Used for lazy initialization."""
+  vocab_file = 'vocab.txt'
   assert(tf.io.gfile.exists(vocab_file))
 
   tokenizer = tokenization.FullTokenizer(vocab_file, do_lower_case)
@@ -525,67 +518,54 @@ def from_codes(filename,
   return _load(tfrecord_file, meta_data_file, max_seq_len, test_tflite=test_tflite)
 
 
-def from_csv(filename,
-             text_column,
-             label_column,
-             model_uri,
-             max_seq_len,
-             do_lower_case=True,
-             fieldnames=None,
-             is_training=True,
-             delimiter=',',
-             quotechar='"',
-             shuffle=False,
-             cache_dir=None,
-             include_sample_weight=False):
-  """Loads text with labels from the csv file and preproecess text according to `model_spec`.
-  Args:
-    filename: Name of the file.
-    text_column: String, Column name for input text.
-    label_column: String, Column name for labels.
-    fieldnames: A sequence, used in csv.DictReader. If fieldnames is omitted,
-      the values in the first row of file f will be used as the fieldnames.
-    model_spec: Specification for the model.
-    is_training: Whether the loaded data is for training or not.
-    delimiter: Character used to separate fields.
-    quotechar: Character used to quote fields containing special characters.
-    shuffle: boolean, if shuffle, random shuffle data.
-    cache_dir: The cache directory to save preprocessed data. If None,
-      generates a temporary directory to cache preprocessed data.
-  Returns:
-    TextDataset containing text, labels and other related info.
-  """
-  csv_name = os.path.basename(filename)
+def from_transcription_result_file(file_path,
+                                   label_path,
+                                   max_seq_len,
+                                   do_lower_case=True,
+                                   delimiter='\t',
+                                   cache_dir=None):
 
-  vocab_file, tokenizer = build_vocab_tokenizer(model_uri, do_lower_case)
+  csv_base_path = file_path.split(".")[0]
+  true_tfrecord_file = csv_base_path + "_true.tfrecord"
+  transcribed_tfrecord_file = csv_base_path + "_transcribed.tfrecord"
+  print("tfrecord file: %s, %s" % true_tfrecord_file, transcribed_tfrecord_file)
 
-  is_cached, tfrecord_file, meta_data_file = get_cache_info(cache_dir, csv_name)
-
-  print("tfrecord file: %s" % tfrecord_file)
-
-  # If cached, directly loads data from cache directory.
+  is_cached = (os.path.exists(true_tfrecord_file) and os.path.exists(transcribed_tfrecord_file))
   if is_cached:
-    return _load(tfrecord_file, meta_data_file, max_seq_len)
+    return _load(true_tfrecord_file, transcribed_tfrecord_file, max_seq_len)
 
-  lines = read_csv(filename, fieldnames, delimiter, quotechar)
-  if shuffle:
-    random.shuffle(lines)
+  vocab_file, tokenizer = build_vocab_tokenizer(do_lower_case)
+  labels = readFile(labels_path)
+  lines = readFile(test_out_path)[1:]
+  assert len(labels) == len(lines)
 
-  # Gets labels.
-  label_set = set()
-  for line in lines:
-    label_set.add(line[label_column])
-  label_names = sorted(label_set)
+  true_examples = []
+  transcribed_examples = []
+  time_durations = []
 
-  # Generates text examples from csv file.
-  examples = []
+  dur_min = sys.float_info.max
+  dur_max = sys.float_info.min
   for i, line in enumerate(lines):
-      text, label = line[text_column], line[label_column]
-      guid = '%s-%d' % (csv_name, i)
-      examples.append(InputExample(guid, text, None, label))
+      event = line.split("\t")
+      assert len(event) == 5
 
+      time_dur = float(event[1].strip())
+      dur_min = min(time_dur, dur_min)
+      dur_max = max(time_dur, dur_max)
+      time_durations.append(time_dur)
+
+      true_text = line[2]
+      transcribed_text = line[3]
+      assert event[4] == ""
+      
+      label = labels[i]
+      guid = '%s-%d' % (csv_name, i)
+      true_examples.append(InputExample(guid, true_text, label))
+      transcribed_examples.append(InputExample(guid, transcribed_text, label))
+
+  meta_data_file = "meta_data.json"
   # Saves preprocessed data and other assets into files.
-  _save_data(examples, label_names, max_seq_len, tokenizer, tfrecord_file, meta_data_file)
+  _save_data(true_examples, transcribed_examples, max_seq_len, tokenizer, true_tfrecord_file, transcribed_tfrecord_file, meta_data_file)
 
   # Loads data from cache directory.
   return _load(tfrecord_file, meta_data_file, max_seq_len)
@@ -620,48 +600,85 @@ def gen_dataset(dataset,
   ds = ds.prefetch(tf.data.AUTOTUNE)
   return ds
 
-# Step 2. Load the 
+# the labels for all speakers are all separate
+def merge_labels(args, spks):
 
+    labels_all = []
+    for spk_idx, spk in enumerate(spks[0:-1]):
+        label_path = os.path.join(args.transcription_dir, spk, "labels.txt")
+        labels = readFile(label_path)
+        labels_all.extend(labels)
+
+    labels_all_path = os.path.join(args.transcription_dir, spks[-1], "labels.txt")
+    print(labels_all_path)
+    writeListFile(labels_all_path, labels_all)
+        
+
+# Load the model checkpoints
 #def prepare_dataset(args, refinfo):
 def prepare_dataset(args):
 
     spks = [
         "audio_tian",
         "audio_liuyi",
-        "audio_yichen"
+        "audio_yichen",
         "audio_radu",
         "audio_amran",
         "audio_michael",
         "audio_all",
     ]
+    merge_labels(args, spks)
 
-    models = [
+    speech_models = [
         "conformer",
         "contextNet",
         "rnnt"
     ]
 
+    training_strategy = [
+        "PretrainLibrispeech_DirectInferenceEMS",
+        "PretrainLibrispeech_TrainEMS",
+        "TrainFromScratchEMS"
+    ]
+
     for spk_idx, spk in enumerate(spks):
+        labels_path = os.path.join(args.transcription_dir, spk, "labels.txt")
+        for model_idx, model in enumerate(speech_models):
+            for strategy_idx, strategy in enumerate(training_strategy):
+                model_training_strategy = model + "_" + strategy
+                strategy_path = os.path.join(args.transcription_dir, spk, model, model_training_strategy)
+                assert os.path.isdir(strategy_path)
+                
+                if strategy_idx == 0:
+                    test_out_path = os.path.join(strategy_path, "test.output")
+                else:
+                    test_out_path = os.path.join(strategy_path, "test_output.tsv")
         
-        
+                test_ds = from_transcription_result_file(test_out_path, labels_path)
 
-#    test_file_name = os.path.join(args.transcription_dir)
-    test_data, test_meta_data = from_transcription_dir(
-          filename=test_file_name,
-          text_column='ps_pi_as_si_desc_c_mml_c',
-          label_column='label',
-          delimiter='\t',
-          is_training=False,
-          cache_dir=args.eval_dir,
-          model_uri=args.init_model,
-          max_seq_len=args.max_seq_len,
-          shuffle=False,
-          refinfo=refinfo, 
-          test_tflite=args.test_tflite)
-    test_ds = gen_dataset(test_data, args.test_batch_size, is_training=False)
-    print(test_meta_data)
 
-    return test_ds, test_meta_data    
+                model_path = args.protocol_model
+                print("we are using %s for end2end evaluation" % model_path)
+#                model_dir_lis = tf.io.gfile.listdir(args.model_dir)
+#                best_model_ckpt = natsort.natsorted(model_dir_list)[-1]
+#                print("we have %s emsANN: %s, we choose %s " % (len(model_dir_list), model_dir_list, best_model_ckpt))
+            
+#                best_model_ckpt = os.path.join(args.model_dir, best_model_ckpt)
+#                test_data_size = len(list(test_ds))
+#                print("testing the model: %s with size %s" % (best_model_ckpt, test_data_size))
+                bert_model = tf.keras.models.load_model(best_model_ckpt, compile=False)
+                bert_model.compile(
+                        optimizer='adam',
+                        loss=tf.keras.losses.SparseCategoricalCrossentropy(),
+                        metrics=[top1_metric_fn(), top3_metric_fn(), top5_metric_fn()])
+            
+                # measure the inference latency
+            
+                time_s = datetime.now()
+                eval_result = bert_model.evaluate(test_ds)
+                time_t = datetime.now() - time_s
+                time_a = time_t / test_data_size
+                print("inference time of model %s on server is %s" % (best_model_ckpt, time_a))
 
 def create_classifier_model(bert_config,
                             num_labels,
@@ -1210,7 +1227,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description = "control the e2e eval functions for EMSBert")
     parser.add_argument("--transcription_dir", action='store', type=str, default = "/slot1/emsAssist_e2e_eval", help="directory containing all transcription results")
-    parser.add_argument("--model", action='store', type=str, default = "/home/liuyi/emsAssist_mobisys22/model/emsBERT/FineTune_MobileEnUncase1_Fitted_Desc/0004", help="directory storing the different initialization models")
+    parser.add_argument("--protocol_model", action='store', type=str, default = "/home/liuyi/emsAssist_mobisys22/model/emsBERT/FineTune_MobileEnUncase1_Fitted_Desc/0004", help="directory storing the different initialization models")
     parser.add_argument("--cuda_device", action='store', type=str, default = "1", help="indicate the cuda device number")
     parser.add_argument("--max_seq_len", type=int, default=128, help="maximum sequence length")
 
@@ -1220,20 +1237,20 @@ if __name__ == "__main__":
     os.environ['CUDA_VISIBLE_DEVICES'] = args.cuda_device
 #    refinfo = RefInfo()
 
-    test_ds, test_meta_data = prepare_dataset(args, refinfo)
+    test_ds, test_meta_data = prepare_dataset(args)
 #    if args.do_train:
 #        bert_model, callbacks = prepare_model(train_ds, train_meta_data, validation_ds, args)
 #        bert_model = model_fit(bert_model, train_ds, validation_ds, callbacks, args.train_epoch)
 #    if args.do_test:
 #        model_test(bert_model, test_ds)
         #best_bert_model = model_test(train_ds, train_meta_data, validation_ds, test_ds, args)
-        best_bert_model = model_test(test_ds, args)
+#        best_bert_model = model_test(test_ds, args)
 #        print("best_bert_model: ", best_bert_model)
-        if args.save_tflite:
-            model_save_tflite(best_bert_model, args)
+#        if args.save_tflite:
+#            model_save_tflite(best_bert_model, args)
 
-    if args.test_tflite:
-        test_tflite(test_ds, args)
+#    if args.test_tflite:
+#        test_tflite(test_ds, args)
     
 
 #    if args.do_predict:
