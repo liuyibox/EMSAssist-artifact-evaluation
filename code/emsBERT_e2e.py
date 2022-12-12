@@ -473,8 +473,8 @@ def evaluate_end_to_end(args):
                 strategy_path = os.path.join(args.transcription_dir, spk, speech_model, model_training_strategy)
                 assert os.path.isdir(strategy_path)
 
-#                if spk_idx != 6:
-#                    continue
+                if spk_idx != 6:
+                    continue
 
                 print("\n#######################################")
                 if (spk == "audio_radu" and speech_model == "conformer" and strategy == "TrainFromScratchEMS"):
