@@ -490,11 +490,11 @@ def from_codes(filename,
 
   is_cached, tfrecord_file, meta_data_file = get_cache_info(cache_dir, csv_name)
 
-  print("tfrecord file: %s" % tfrecord_file)
+  # print("tfrecord file: %s" % tfrecord_file)
 
   # If cached, directly loads data from cache directory.
-  if is_cached:
-    return _load(tfrecord_file, meta_data_file, max_seq_len, test_tflite=test_tflite)
+  # if is_cached:
+  #   return _load(tfrecord_file, meta_data_file, max_seq_len, test_tflite=test_tflite)
 
 
   vocab_file, tokenizer = build_vocab_tokenizer(model_uri, do_lower_case)

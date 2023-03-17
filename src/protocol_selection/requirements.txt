@@ -4,3 +4,4 @@ gin-config
 tflite-support
 tensorflow_hub
 natsort
+scikit-learn
