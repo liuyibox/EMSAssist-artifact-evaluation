@@ -1,0 +1,6 @@
+tensorflow_addons
+sentencepiece
+gin-config
+tflite-support
+tensorflow_hub
+natsort
