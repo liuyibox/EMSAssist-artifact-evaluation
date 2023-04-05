@@ -15,7 +15,19 @@ Install the required modules for training/testing protocol selection models:
 
 ## 1.2 Testing
 
-### 1.2.1 Protocol Selection on Customized Local Dataset
+### 1.2.1 WER/CER for all users
+
+`(xgb-gpu) liuyi@lenss-gpu:~/emsAssist_mobisys22/src/speech_recognition/examples/conformer$ python test.py --output test_outputs/test_for_all_ae.txt --saved ~/emsAssist_mobisys22/model/speech_models/all_14.h5 --config config_PretrainLibrispeech_TrainEMS_all.yml`
+
+> INFO:tensorflow:greedy_wer: 0.07701108604669571
+>
+> INFO:tensorflow:greedy_cer: 0.042713455855846405
+>
+> INFO:tensorflow:beamsearch_wer: 1.0
+>
+> INFO:tensorflow:beamsearch_cer: 1.0
+>
+> This run takes 0:07:28.011039
 
 EMSMobileBERT (ours, 1.2 mins): `python emsBERT.py --test_model_path ../../model/emsBERT/FineTune_MobileEnUncase1_Fitted_Desc/0004/ --eval_dir ../../data/ae_text_data/ --cuda_device 1 --max_seq_len 128 --test_file no_fitted_separated_desc_code_46_test.txt --test_batch_size 64 --do_test`
 

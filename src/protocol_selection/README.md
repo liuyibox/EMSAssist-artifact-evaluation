@@ -1,4 +1,5 @@
-# EMSAssist
+# EMSMobileBERT
+
 This repository contains the finalized files for EMSAssist. For artifact evaluation (AE) purposes, i.e., you only want to reproduce the results with our fine-tuned TensorFlow/TensorFlowLite (TF/TFLite) models, you can just look at the testing sections. In cases where you want to develop your customized protocol selection or automatic speech recognition (ASR) models, you can refer to the training sections.
 
 We tested this repo with TensorFlow-GPU versions: 2.9, 2.11
