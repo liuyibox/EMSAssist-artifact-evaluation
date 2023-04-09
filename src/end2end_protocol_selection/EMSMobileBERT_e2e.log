@@ -1,0 +1,207 @@
+(xgb-gpu) liuyi@lenss-gpu:~/emsAssist_mobisys22/src/end2end_protocol_selection$ python emsBERT_e2e.py --protocol_model /home/liuyi/emsAssist_mobisys22/model/emsBERT/FineTune_MobileEnUncase1_Fitted_Desc/0004  --protocol_tflite_model /home/liuyi/emsAssist_mobisys22/data/text_data/emsBERT_tfrecord_files/export_tflite/FineTune_MobileEnUncase1_Fitted_Desc_batch1.tflite --cuda_device 0
+2023-04-07 05:55:32.109139: I tensorflow/core/util/util.cc:169] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+labels_all_dict len: 600
+
+#######################################
+label_path: /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/conformer/conformer_PretrainLibrispeech_DirectInferenceEMS/labels.txt
+tfrecord files: /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/conformer/conformer_PretrainLibrispeech_DirectInferenceEMS/test_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/conformer/conformer_PretrainLibrispeech_DirectInferenceEMS/test_transcribed.tfrecord
+duration: min 5.08, max 48.32, sum 9351.239999999987, total 600, average 15.585399999999979
+2023-04-07 05:55:34.869418: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 AVX512F AVX512_VNNI FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2023-04-07 05:55:35.444810: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1532] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 22163 MB memory:  -> device: 0, name: NVIDIA A30, pci bus id: 0000:17:00.0, compute capability: 8.0
+INFO:absl:Load preprocessed data and metadata from /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/conformer/conformer_PretrainLibrispeech_DirectInferenceEMS/test_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/conformer/conformer_PretrainLibrispeech_DirectInferenceEMS/test_transcribed.tfrecord and meta_data.json 
+we are using /home/liuyi/emsAssist_mobisys22/model/emsBERT/FineTune_MobileEnUncase1_Fitted_Desc/0004 for end2end evaluation
+true text accuracy:
+2023-04-07 05:56:14.205689: I tensorflow/stream_executor/cuda/cuda_blas.cc:1786] TensorFloat-32 will be used for the matrix multiplication. This will only be logged once.
+      1/Unknown - 4s 4s/step - loss: 0.9943 - top1_accuracy: 0.7200 - top3_accuracy: 0.9000 - top5_accuracy: 0.9      2/Unknown - 4s 88ms/step - loss: 0.9568 - top1_accuracy: 0.7300 - top3_accuracy: 0.9150 - top5_accuracy: 0      3/Unknown - 4s 90ms/step - loss: 0.8933 - top1_accuracy: 0.7467 - top3_accuracy: 0.9300 - top5_accuracy: 0      4/Unknown - 4s 89ms/step - loss: 0.9082 - top1_accuracy: 0.7400 - top3_accuracy: 0.9200 - top5_accuracy: 0      5/Unknown - 4s 89ms/step - loss: 0.9235 - top1_accuracy: 0.7280 - top3_accuracy: 0.9220 - top5_accuracy: 0      6/Unknown - 4s 90ms/step - loss: 0.9396 - top1_accuracy: 0.7250 - top3_accuracy: 0.9267 - top5_accuracy: 06/6 [==============================] - 4s 140ms/step - loss: 0.9396 - top1_accuracy: 0.7250 - top3_accuracy: 0.9267 - top5_accuracy: 0.9750
+transcribed text accuracy:
+      1/Unknown - 0s 163ms/step - loss: 2.1871 - top1_accuracy: 0.4900 - top3_accuracy: 0.6500 - top5_accuracy:       2/Unknown - 0s 94ms/step - loss: 2.2035 - top1_accuracy: 0.4600 - top3_accuracy: 0.6300 - top5_accuracy: 0      3/Unknown - 0s 91ms/step - loss: 1.9522 - top1_accuracy: 0.5000 - top3_accuracy: 0.6767 - top5_accuracy: 0      4/Unknown - 0s 91ms/step - loss: 1.9676 - top1_accuracy: 0.4850 - top3_accuracy: 0.6625 - top5_accuracy: 0      5/Unknown - 1s 90ms/step - loss: 1.9489 - top1_accuracy: 0.4980 - top3_accuracy: 0.6760 - top5_accuracy: 0      6/Unknown - 1s 90ms/step - loss: 1.8676 - top1_accuracy: 0.5083 - top3_accuracy: 0.7017 - top5_accuracy: 06/6 [==============================] - 1s 93ms/step - loss: 1.8676 - top1_accuracy: 0.5083 - top3_accuracy: 0.7017 - top5_accuracy: 0.7917
+tfrecord files: /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/conformer/conformer_PretrainLibrispeech_DirectInferenceEMS/test_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/conformer/conformer_PretrainLibrispeech_DirectInferenceEMS/test_transcribed.tfrecord
+duration: min 5.08, max 48.32, sum 9351.239999999987, total 600, average 15.585399999999979
+INFO:absl:Load preprocessed data and metadata from /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/conformer/conformer_PretrainLibrispeech_DirectInferenceEMS/test_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/conformer/conformer_PretrainLibrispeech_DirectInferenceEMS/test_transcribed.tfrecord and meta_data.json 
+true text tflite accuracy:
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+tflite inference time of model /home/liuyi/emsAssist_mobisys22/data/text_data/emsBERT_tfrecord_files/export_tflite/FineTune_MobileEnUncase1_Fitted_Desc_batch1.tflite on server is 0:00:00.242338
+Here is the top1/3/5 using tf sparse topk:
+0.735 0.93 0.975
+transcribed text tflite accuracy:
+tflite inference time of model /home/liuyi/emsAssist_mobisys22/data/text_data/emsBERT_tfrecord_files/export_tflite/FineTune_MobileEnUncase1_Fitted_Desc_batch1.tflite on server is 0:00:00.242722
+Here is the top1/3/5 using tf sparse topk:
+0.5083333 0.7033333 0.795
+
+#######################################
+label_path: /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/conformer/conformer_PretrainLibrispeech_TrainEMS/labels.txt
+tfrecord files: /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/conformer/conformer_PretrainLibrispeech_TrainEMS/test_output_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/conformer/conformer_PretrainLibrispeech_TrainEMS/test_output_transcribed.tfrecord
+duration: min 5.08, max 48.32, sum 9351.239999999996, total 600, average 15.585399999999993
+INFO:absl:Load preprocessed data and metadata from /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/conformer/conformer_PretrainLibrispeech_TrainEMS/test_output_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/conformer/conformer_PretrainLibrispeech_TrainEMS/test_output_transcribed.tfrecord and meta_data.json 
+we are using /home/liuyi/emsAssist_mobisys22/model/emsBERT/FineTune_MobileEnUncase1_Fitted_Desc/0004 for end2end evaluation
+true text accuracy:
+      1/Unknown - 3s 3s/step - loss: 0.9943 - top1_accuracy: 0.7200 - top3_accuracy: 0.9000 - top5_accuracy: 0.9      2/Unknown - 3s 100ms/step - loss: 0.9568 - top1_accuracy: 0.7300 - top3_accuracy: 0.9150 - top5_accuracy:       3/Unknown - 3s 93ms/step - loss: 0.9780 - top1_accuracy: 0.7233 - top3_accuracy: 0.9267 - top5_accuracy: 0      4/Unknown - 3s 91ms/step - loss: 0.9250 - top1_accuracy: 0.7375 - top3_accuracy: 0.9350 - top5_accuracy: 0      5/Unknown - 3s 91ms/step - loss: 0.9307 - top1_accuracy: 0.7340 - top3_accuracy: 0.9260 - top5_accuracy: 0      6/Unknown - 3s 90ms/step - loss: 0.9396 - top1_accuracy: 0.7250 - top3_accuracy: 0.9267 - top5_accuracy: 06/6 [==============================] - 3s 93ms/step - loss: 0.9396 - top1_accuracy: 0.7250 - top3_accuracy: 0.9267 - top5_accuracy: 0.9750
+transcribed text accuracy:
+      1/Unknown - 0s 162ms/step - loss: 1.0914 - top1_accuracy: 0.7200 - top3_accuracy: 0.8800 - top5_accuracy:       2/Unknown - 0s 81ms/step - loss: 1.0867 - top1_accuracy: 0.7150 - top3_accuracy: 0.8850 - top5_accuracy: 0      3/Unknown - 0s 85ms/step - loss: 1.0891 - top1_accuracy: 0.7100 - top3_accuracy: 0.9033 - top5_accuracy: 0      4/Unknown - 0s 86ms/step - loss: 1.0337 - top1_accuracy: 0.7150 - top3_accuracy: 0.9150 - top5_accuracy: 0      5/Unknown - 1s 87ms/step - loss: 1.0280 - top1_accuracy: 0.7140 - top3_accuracy: 0.9100 - top5_accuracy: 0      6/Unknown - 1s 88ms/step - loss: 1.0325 - top1_accuracy: 0.7083 - top3_accuracy: 0.9067 - top5_accuracy: 06/6 [==============================] - 1s 90ms/step - loss: 1.0325 - top1_accuracy: 0.7083 - top3_accuracy: 0.9067 - top5_accuracy: 0.9517
+tfrecord files: /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/conformer/conformer_PretrainLibrispeech_TrainEMS/test_output_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/conformer/conformer_PretrainLibrispeech_TrainEMS/test_output_transcribed.tfrecord
+duration: min 5.08, max 48.32, sum 9351.239999999996, total 600, average 15.585399999999993
+INFO:absl:Load preprocessed data and metadata from /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/conformer/conformer_PretrainLibrispeech_TrainEMS/test_output_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/conformer/conformer_PretrainLibrispeech_TrainEMS/test_output_transcribed.tfrecord and meta_data.json 
+true text tflite accuracy:
+tflite inference time of model /home/liuyi/emsAssist_mobisys22/data/text_data/emsBERT_tfrecord_files/export_tflite/FineTune_MobileEnUncase1_Fitted_Desc_batch1.tflite on server is 0:00:00.242995
+Here is the top1/3/5 using tf sparse topk:
+0.735 0.93 0.975
+transcribed text tflite accuracy:
+tflite inference time of model /home/liuyi/emsAssist_mobisys22/data/text_data/emsBERT_tfrecord_files/export_tflite/FineTune_MobileEnUncase1_Fitted_Desc_batch1.tflite on server is 0:00:00.241944
+Here is the top1/3/5 using tf sparse topk:
+0.71166664 0.905 0.95166665
+
+#######################################
+label_path: /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/conformer/conformer_TrainFromScratchEMS/labels.txt
+tfrecord files: /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/conformer/conformer_TrainFromScratchEMS/test_output_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/conformer/conformer_TrainFromScratchEMS/test_output_transcribed.tfrecord
+duration: min 5.08, max 48.32, sum 9351.239999999987, total 600, average 15.585399999999979
+INFO:absl:Load preprocessed data and metadata from /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/conformer/conformer_TrainFromScratchEMS/test_output_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/conformer/conformer_TrainFromScratchEMS/test_output_transcribed.tfrecord and meta_data.json 
+we are using /home/liuyi/emsAssist_mobisys22/model/emsBERT/FineTune_MobileEnUncase1_Fitted_Desc/0004 for end2end evaluation
+true text accuracy:
+      1/Unknown - 3s 3s/step - loss: 0.9943 - top1_accuracy: 0.7200 - top3_accuracy: 0.9000 - top5_accuracy: 0.9      2/Unknown - 3s 83ms/step - loss: 0.9568 - top1_accuracy: 0.7300 - top3_accuracy: 0.9150 - top5_accuracy: 0      3/Unknown - 3s 84ms/step - loss: 0.8933 - top1_accuracy: 0.7467 - top3_accuracy: 0.9300 - top5_accuracy: 0      4/Unknown - 3s 86ms/step - loss: 0.9082 - top1_accuracy: 0.7400 - top3_accuracy: 0.9200 - top5_accuracy: 0      5/Unknown - 3s 86ms/step - loss: 0.9235 - top1_accuracy: 0.7280 - top3_accuracy: 0.9220 - top5_accuracy: 0      6/Unknown - 3s 86ms/step - loss: 0.9396 - top1_accuracy: 0.7250 - top3_accuracy: 0.9267 - top5_accuracy: 06/6 [==============================] - 3s 89ms/step - loss: 0.9396 - top1_accuracy: 0.7250 - top3_accuracy: 0.9267 - top5_accuracy: 0.9750
+transcribed text accuracy:
+      1/Unknown - 1s 508ms/step - loss: 6.0116 - top1_accuracy: 0.0900 - top3_accuracy: 0.1800 - top5_accuracy:       2/Unknown - 1s 80ms/step - loss: 5.9643 - top1_accuracy: 0.0600 - top3_accuracy: 0.1600 - top5_accuracy: 0      3/Unknown - 1s 82ms/step - loss: 6.1109 - top1_accuracy: 0.0533 - top3_accuracy: 0.1567 - top5_accuracy: 0      4/Unknown - 1s 84ms/step - loss: 5.9403 - top1_accuracy: 0.0600 - top3_accuracy: 0.1800 - top5_accuracy: 0      5/Unknown - 1s 86ms/step - loss: 5.9532 - top1_accuracy: 0.0800 - top3_accuracy: 0.1940 - top5_accuracy: 0      6/Unknown - 1s 86ms/step - loss: 5.9375 - top1_accuracy: 0.0867 - top3_accuracy: 0.1967 - top5_accuracy: 06/6 [==============================] - 1s 89ms/step - loss: 5.9375 - top1_accuracy: 0.0867 - top3_accuracy: 0.1967 - top5_accuracy: 0.2967
+tfrecord files: /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/conformer/conformer_TrainFromScratchEMS/test_output_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/conformer/conformer_TrainFromScratchEMS/test_output_transcribed.tfrecord
+duration: min 5.08, max 48.32, sum 9351.239999999987, total 600, average 15.585399999999979
+INFO:absl:Load preprocessed data and metadata from /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/conformer/conformer_TrainFromScratchEMS/test_output_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/conformer/conformer_TrainFromScratchEMS/test_output_transcribed.tfrecord and meta_data.json 
+true text tflite accuracy:
+tflite inference time of model /home/liuyi/emsAssist_mobisys22/data/text_data/emsBERT_tfrecord_files/export_tflite/FineTune_MobileEnUncase1_Fitted_Desc_batch1.tflite on server is 0:00:00.243430
+Here is the top1/3/5 using tf sparse topk:
+0.735 0.93 0.975
+transcribed text tflite accuracy:
+tflite inference time of model /home/liuyi/emsAssist_mobisys22/data/text_data/emsBERT_tfrecord_files/export_tflite/FineTune_MobileEnUncase1_Fitted_Desc_batch1.tflite on server is 0:00:00.240561
+Here is the top1/3/5 using tf sparse topk:
+0.09166667 0.20666666 0.29666665
+
+#######################################
+label_path: /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/contextNet/contextNet_PretrainLibrispeech_DirectInferenceEMS/labels.txt
+tfrecord files: /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/contextNet/contextNet_PretrainLibrispeech_DirectInferenceEMS/test_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/contextNet/contextNet_PretrainLibrispeech_DirectInferenceEMS/test_transcribed.tfrecord
+duration: min 5.08, max 48.32, sum 9351.239999999987, total 600, average 15.585399999999979
+INFO:absl:Load preprocessed data and metadata from /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/contextNet/contextNet_PretrainLibrispeech_DirectInferenceEMS/test_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/contextNet/contextNet_PretrainLibrispeech_DirectInferenceEMS/test_transcribed.tfrecord and meta_data.json 
+we are using /home/liuyi/emsAssist_mobisys22/model/emsBERT/FineTune_MobileEnUncase1_Fitted_Desc/0004 for end2end evaluation
+true text accuracy:
+      1/Unknown - 3s 3s/step - loss: 0.9943 - top1_accuracy: 0.7200 - top3_accuracy: 0.9000 - top5_accuracy: 0.9      2/Unknown - 3s 83ms/step - loss: 0.9568 - top1_accuracy: 0.7300 - top3_accuracy: 0.9150 - top5_accuracy: 0      3/Unknown - 3s 84ms/step - loss: 0.8933 - top1_accuracy: 0.7467 - top3_accuracy: 0.9300 - top5_accuracy: 0      4/Unknown - 3s 86ms/step - loss: 0.9082 - top1_accuracy: 0.7400 - top3_accuracy: 0.9200 - top5_accuracy: 0      5/Unknown - 3s 87ms/step - loss: 0.9235 - top1_accuracy: 0.7280 - top3_accuracy: 0.9220 - top5_accuracy: 0      6/Unknown - 3s 87ms/step - loss: 0.9396 - top1_accuracy: 0.7250 - top3_accuracy: 0.9267 - top5_accuracy: 06/6 [==============================] - 3s 90ms/step - loss: 0.9396 - top1_accuracy: 0.7250 - top3_accuracy: 0.9267 - top5_accuracy: 0.9750
+transcribed text accuracy:
+      1/Unknown - 0s 429ms/step - loss: 2.5683 - top1_accuracy: 0.3500 - top3_accuracy: 0.5100 - top5_accuracy:       2/Unknown - 1s 87ms/step - loss: 2.8239 - top1_accuracy: 0.2900 - top3_accuracy: 0.4200 - top5_accuracy: 0      3/Unknown - 1s 88ms/step - loss: 2.5651 - top1_accuracy: 0.3433 - top3_accuracy: 0.5133 - top5_accuracy: 0      4/Unknown - 1s 88ms/step - loss: 2.4876 - top1_accuracy: 0.3475 - top3_accuracy: 0.5525 - top5_accuracy: 0      5/Unknown - 1s 89ms/step - loss: 2.4546 - top1_accuracy: 0.3680 - top3_accuracy: 0.5720 - top5_accuracy: 0      6/Unknown - 1s 89ms/step - loss: 2.4181 - top1_accuracy: 0.3800 - top3_accuracy: 0.5833 - top5_accuracy: 06/6 [==============================] - 1s 92ms/step - loss: 2.4181 - top1_accuracy: 0.3800 - top3_accuracy: 0.5833 - top5_accuracy: 0.6683
+tfrecord files: /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/contextNet/contextNet_PretrainLibrispeech_DirectInferenceEMS/test_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/contextNet/contextNet_PretrainLibrispeech_DirectInferenceEMS/test_transcribed.tfrecord
+duration: min 5.08, max 48.32, sum 9351.239999999987, total 600, average 15.585399999999979
+INFO:absl:Load preprocessed data and metadata from /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/contextNet/contextNet_PretrainLibrispeech_DirectInferenceEMS/test_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/contextNet/contextNet_PretrainLibrispeech_DirectInferenceEMS/test_transcribed.tfrecord and meta_data.json 
+true text tflite accuracy:
+tflite inference time of model /home/liuyi/emsAssist_mobisys22/data/text_data/emsBERT_tfrecord_files/export_tflite/FineTune_MobileEnUncase1_Fitted_Desc_batch1.tflite on server is 0:00:00.240227
+Here is the top1/3/5 using tf sparse topk:
+0.735 0.93 0.975
+transcribed text tflite accuracy:
+tflite inference time of model /home/liuyi/emsAssist_mobisys22/data/text_data/emsBERT_tfrecord_files/export_tflite/FineTune_MobileEnUncase1_Fitted_Desc_batch1.tflite on server is 0:00:00.243227
+Here is the top1/3/5 using tf sparse topk:
+0.37333333 0.58166665 0.6666667
+
+#######################################
+label_path: /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/contextNet/contextNet_PretrainLibrispeech_TrainEMS/labels.txt
+tfrecord files: /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/contextNet/contextNet_PretrainLibrispeech_TrainEMS/test_output_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/contextNet/contextNet_PretrainLibrispeech_TrainEMS/test_output_transcribed.tfrecord
+duration: min 5.08, max 48.32, sum 9351.239999999996, total 600, average 15.585399999999993
+INFO:absl:Load preprocessed data and metadata from /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/contextNet/contextNet_PretrainLibrispeech_TrainEMS/test_output_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/contextNet/contextNet_PretrainLibrispeech_TrainEMS/test_output_transcribed.tfrecord and meta_data.json 
+we are using /home/liuyi/emsAssist_mobisys22/model/emsBERT/FineTune_MobileEnUncase1_Fitted_Desc/0004 for end2end evaluation
+true text accuracy:
+      1/Unknown - 3s 3s/step - loss: 0.9943 - top1_accuracy: 0.7200 - top3_accuracy: 0.9000 - top5_accuracy: 0.9      2/Unknown - 3s 82ms/step - loss: 1.0073 - top1_accuracy: 0.7150 - top3_accuracy: 0.9250 - top5_accuracy: 0      3/Unknown - 3s 83ms/step - loss: 0.9270 - top1_accuracy: 0.7367 - top3_accuracy: 0.9367 - top5_accuracy: 0      4/Unknown - 3s 84ms/step - loss: 0.9250 - top1_accuracy: 0.7375 - top3_accuracy: 0.9350 - top5_accuracy: 0      5/Unknown - 3s 85ms/step - loss: 0.9307 - top1_accuracy: 0.7340 - top3_accuracy: 0.9260 - top5_accuracy: 0      6/Unknown - 3s 86ms/step - loss: 0.9396 - top1_accuracy: 0.7250 - top3_accuracy: 0.9267 - top5_accuracy: 06/6 [==============================] - 3s 89ms/step - loss: 0.9396 - top1_accuracy: 0.7250 - top3_accuracy: 0.9267 - top5_accuracy: 0.9750
+transcribed text accuracy:
+      1/Unknown - 0s 175ms/step - loss: 2.1256 - top1_accuracy: 0.5600 - top3_accuracy: 0.7400 - top5_accuracy:       2/Unknown - 0s 89ms/step - loss: 1.8113 - top1_accuracy: 0.5900 - top3_accuracy: 0.7900 - top5_accuracy: 0      3/Unknown - 0s 90ms/step - loss: 1.6161 - top1_accuracy: 0.6133 - top3_accuracy: 0.8167 - top5_accuracy: 0      4/Unknown - 0s 90ms/step - loss: 1.6447 - top1_accuracy: 0.6050 - top3_accuracy: 0.8025 - top5_accuracy: 0      5/Unknown - 1s 90ms/step - loss: 1.5931 - top1_accuracy: 0.6180 - top3_accuracy: 0.8140 - top5_accuracy: 0      6/Unknown - 1s 90ms/step - loss: 1.6692 - top1_accuracy: 0.6067 - top3_accuracy: 0.7983 - top5_accuracy: 06/6 [==============================] - 1s 93ms/step - loss: 1.6692 - top1_accuracy: 0.6067 - top3_accuracy: 0.7983 - top5_accuracy: 0.8483
+tfrecord files: /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/contextNet/contextNet_PretrainLibrispeech_TrainEMS/test_output_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/contextNet/contextNet_PretrainLibrispeech_TrainEMS/test_output_transcribed.tfrecord
+duration: min 5.08, max 48.32, sum 9351.239999999996, total 600, average 15.585399999999993
+INFO:absl:Load preprocessed data and metadata from /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/contextNet/contextNet_PretrainLibrispeech_TrainEMS/test_output_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/contextNet/contextNet_PretrainLibrispeech_TrainEMS/test_output_transcribed.tfrecord and meta_data.json 
+true text tflite accuracy:
+tflite inference time of model /home/liuyi/emsAssist_mobisys22/data/text_data/emsBERT_tfrecord_files/export_tflite/FineTune_MobileEnUncase1_Fitted_Desc_batch1.tflite on server is 0:00:00.244175
+Here is the top1/3/5 using tf sparse topk:
+0.735 0.93 0.975
+transcribed text tflite accuracy:
+tflite inference time of model /home/liuyi/emsAssist_mobisys22/data/text_data/emsBERT_tfrecord_files/export_tflite/FineTune_MobileEnUncase1_Fitted_Desc_batch1.tflite on server is 0:00:00.242541
+Here is the top1/3/5 using tf sparse topk:
+0.6 0.79833335 0.8466667
+
+#######################################
+label_path: /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/contextNet/contextNet_TrainFromScratchEMS/labels.txt
+tfrecord files: /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/contextNet/contextNet_TrainFromScratchEMS/test_output_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/contextNet/contextNet_TrainFromScratchEMS/test_output_transcribed.tfrecord
+duration: min 5.08, max 48.32, sum 9351.239999999994, total 600, average 15.585399999999991
+INFO:absl:Load preprocessed data and metadata from /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/contextNet/contextNet_TrainFromScratchEMS/test_output_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/contextNet/contextNet_TrainFromScratchEMS/test_output_transcribed.tfrecord and meta_data.json 
+we are using /home/liuyi/emsAssist_mobisys22/model/emsBERT/FineTune_MobileEnUncase1_Fitted_Desc/0004 for end2end evaluation
+true text accuracy:
+      1/Unknown - 3s 3s/step - loss: 0.9943 - top1_accuracy: 0.7200 - top3_accuracy: 0.9000 - top5_accuracy: 0.9      2/Unknown - 3s 92ms/step - loss: 1.0073 - top1_accuracy: 0.7150 - top3_accuracy: 0.9250 - top5_accuracy: 0      3/Unknown - 3s 91ms/step - loss: 0.9780 - top1_accuracy: 0.7233 - top3_accuracy: 0.9267 - top5_accuracy: 0      4/Unknown - 3s 91ms/step - loss: 0.9250 - top1_accuracy: 0.7375 - top3_accuracy: 0.9350 - top5_accuracy: 0      5/Unknown - 3s 90ms/step - loss: 0.9307 - top1_accuracy: 0.7340 - top3_accuracy: 0.9260 - top5_accuracy: 0      6/Unknown - 3s 90ms/step - loss: 0.9396 - top1_accuracy: 0.7250 - top3_accuracy: 0.9267 - top5_accuracy: 06/6 [==============================] - 3s 92ms/step - loss: 0.9396 - top1_accuracy: 0.7250 - top3_accuracy: 0.9267 - top5_accuracy: 0.9750
+transcribed text accuracy:
+      1/Unknown - 0s 358ms/step - loss: 5.3729 - top1_accuracy: 0.0400 - top3_accuracy: 0.0900 - top5_accuracy:       2/Unknown - 0s 85ms/step - loss: 5.3538 - top1_accuracy: 0.0400 - top3_accuracy: 0.0900 - top5_accuracy: 0      3/Unknown - 1s 88ms/step - loss: 5.3796 - top1_accuracy: 0.0467 - top3_accuracy: 0.0967 - top5_accuracy: 0      4/Unknown - 1s 88ms/step - loss: 5.3777 - top1_accuracy: 0.0425 - top3_accuracy: 0.0900 - top5_accuracy: 0      5/Unknown - 1s 89ms/step - loss: 5.3219 - top1_accuracy: 0.0480 - top3_accuracy: 0.0960 - top5_accuracy: 0      6/Unknown - 1s 89ms/step - loss: 5.3625 - top1_accuracy: 0.0483 - top3_accuracy: 0.0917 - top5_accuracy: 06/6 [==============================] - 1s 92ms/step - loss: 5.3625 - top1_accuracy: 0.0483 - top3_accuracy: 0.0917 - top5_accuracy: 0.2050
+tfrecord files: /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/contextNet/contextNet_TrainFromScratchEMS/test_output_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/contextNet/contextNet_TrainFromScratchEMS/test_output_transcribed.tfrecord
+duration: min 5.08, max 48.32, sum 9351.239999999994, total 600, average 15.585399999999991
+INFO:absl:Load preprocessed data and metadata from /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/contextNet/contextNet_TrainFromScratchEMS/test_output_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/contextNet/contextNet_TrainFromScratchEMS/test_output_transcribed.tfrecord and meta_data.json 
+true text tflite accuracy:
+tflite inference time of model /home/liuyi/emsAssist_mobisys22/data/text_data/emsBERT_tfrecord_files/export_tflite/FineTune_MobileEnUncase1_Fitted_Desc_batch1.tflite on server is 0:00:00.241640
+Here is the top1/3/5 using tf sparse topk:
+0.735 0.93 0.975
+transcribed text tflite accuracy:
+tflite inference time of model /home/liuyi/emsAssist_mobisys22/data/text_data/emsBERT_tfrecord_files/export_tflite/FineTune_MobileEnUncase1_Fitted_Desc_batch1.tflite on server is 0:00:00.242231
+Here is the top1/3/5 using tf sparse topk:
+0.048333332 0.09166667 0.205
+
+#######################################
+label_path: /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/rnnt/rnnt_PretrainLibrispeech_DirectInferenceEMS/labels.txt
+tfrecord files: /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/rnnt/rnnt_PretrainLibrispeech_DirectInferenceEMS/test_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/rnnt/rnnt_PretrainLibrispeech_DirectInferenceEMS/test_transcribed.tfrecord
+duration: min 5.08, max 48.32, sum 9351.239999999987, total 600, average 15.585399999999979
+INFO:absl:Load preprocessed data and metadata from /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/rnnt/rnnt_PretrainLibrispeech_DirectInferenceEMS/test_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/rnnt/rnnt_PretrainLibrispeech_DirectInferenceEMS/test_transcribed.tfrecord and meta_data.json 
+we are using /home/liuyi/emsAssist_mobisys22/model/emsBERT/FineTune_MobileEnUncase1_Fitted_Desc/0004 for end2end evaluation
+true text accuracy:
+      1/Unknown - 3s 3s/step - loss: 0.9943 - top1_accuracy: 0.7200 - top3_accuracy: 0.9000 - top5_accuracy: 0.9      2/Unknown - 3s 96ms/step - loss: 0.9568 - top1_accuracy: 0.7300 - top3_accuracy: 0.9150 - top5_accuracy: 0      3/Unknown - 3s 94ms/step - loss: 0.8933 - top1_accuracy: 0.7467 - top3_accuracy: 0.9300 - top5_accuracy: 0      4/Unknown - 3s 92ms/step - loss: 0.9082 - top1_accuracy: 0.7400 - top3_accuracy: 0.9200 - top5_accuracy: 0      5/Unknown - 3s 92ms/step - loss: 0.9235 - top1_accuracy: 0.7280 - top3_accuracy: 0.9220 - top5_accuracy: 0      6/Unknown - 3s 92ms/step - loss: 0.9396 - top1_accuracy: 0.7250 - top3_accuracy: 0.9267 - top5_accuracy: 06/6 [==============================] - 3s 94ms/step - loss: 0.9396 - top1_accuracy: 0.7250 - top3_accuracy: 0.9267 - top5_accuracy: 0.9750
+transcribed text accuracy:
+      1/Unknown - 0s 161ms/step - loss: 2.6817 - top1_accuracy: 0.3400 - top3_accuracy: 0.5500 - top5_accuracy:       2/Unknown - 0s 86ms/step - loss: 2.7926 - top1_accuracy: 0.2900 - top3_accuracy: 0.4800 - top5_accuracy: 0      3/Unknown - 0s 88ms/step - loss: 2.5538 - top1_accuracy: 0.3500 - top3_accuracy: 0.5367 - top5_accuracy: 0      4/Unknown - 0s 89ms/step - loss: 2.4550 - top1_accuracy: 0.3675 - top3_accuracy: 0.5625 - top5_accuracy: 0      5/Unknown - 1s 89ms/step - loss: 2.4131 - top1_accuracy: 0.3900 - top3_accuracy: 0.5760 - top5_accuracy: 0      6/Unknown - 1s 89ms/step - loss: 2.3661 - top1_accuracy: 0.3967 - top3_accuracy: 0.5900 - top5_accuracy: 06/6 [==============================] - 1s 92ms/step - loss: 2.3661 - top1_accuracy: 0.3967 - top3_accuracy: 0.5900 - top5_accuracy: 0.6883
+tfrecord files: /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/rnnt/rnnt_PretrainLibrispeech_DirectInferenceEMS/test_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/rnnt/rnnt_PretrainLibrispeech_DirectInferenceEMS/test_transcribed.tfrecord
+duration: min 5.08, max 48.32, sum 9351.239999999987, total 600, average 15.585399999999979
+INFO:absl:Load preprocessed data and metadata from /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/rnnt/rnnt_PretrainLibrispeech_DirectInferenceEMS/test_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/rnnt/rnnt_PretrainLibrispeech_DirectInferenceEMS/test_transcribed.tfrecord and meta_data.json 
+true text tflite accuracy:
+tflite inference time of model /home/liuyi/emsAssist_mobisys22/data/text_data/emsBERT_tfrecord_files/export_tflite/FineTune_MobileEnUncase1_Fitted_Desc_batch1.tflite on server is 0:00:00.242646
+Here is the top1/3/5 using tf sparse topk:
+0.735 0.93 0.975
+transcribed text tflite accuracy:
+tflite inference time of model /home/liuyi/emsAssist_mobisys22/data/text_data/emsBERT_tfrecord_files/export_tflite/FineTune_MobileEnUncase1_Fitted_Desc_batch1.tflite on server is 0:00:00.244195
+Here is the top1/3/5 using tf sparse topk:
+0.39333335 0.5933333 0.6816667
+
+#######################################
+label_path: /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/rnnt/rnnt_PretrainLibrispeech_TrainEMS/labels.txt
+tfrecord files: /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/rnnt/rnnt_PretrainLibrispeech_TrainEMS/test_output_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/rnnt/rnnt_PretrainLibrispeech_TrainEMS/test_output_transcribed.tfrecord
+duration: min 5.08, max 48.32, sum 9351.239999999987, total 600, average 15.585399999999979
+INFO:absl:Load preprocessed data and metadata from /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/rnnt/rnnt_PretrainLibrispeech_TrainEMS/test_output_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/rnnt/rnnt_PretrainLibrispeech_TrainEMS/test_output_transcribed.tfrecord and meta_data.json 
+we are using /home/liuyi/emsAssist_mobisys22/model/emsBERT/FineTune_MobileEnUncase1_Fitted_Desc/0004 for end2end evaluation
+true text accuracy:
+      1/Unknown - 3s 3s/step - loss: 0.9943 - top1_accuracy: 0.7200 - top3_accuracy: 0.9000 - top5_accuracy: 0.9      2/Unknown - 3s 112ms/step - loss: 0.9568 - top1_accuracy: 0.7300 - top3_accuracy: 0.9150 - top5_accuracy:       3/Unknown - 3s 106ms/step - loss: 0.8933 - top1_accuracy: 0.7467 - top3_accuracy: 0.9300 - top5_accuracy:       4/Unknown - 3s 101ms/step - loss: 0.9082 - top1_accuracy: 0.7400 - top3_accuracy: 0.9200 - top5_accuracy:       5/Unknown - 3s 99ms/step - loss: 0.9235 - top1_accuracy: 0.7280 - top3_accuracy: 0.9220 - top5_accuracy: 0      6/Unknown - 3s 96ms/step - loss: 0.9396 - top1_accuracy: 0.7250 - top3_accuracy: 0.9267 - top5_accuracy: 06/6 [==============================] - 3s 99ms/step - loss: 0.9396 - top1_accuracy: 0.7250 - top3_accuracy: 0.9267 - top5_accuracy: 0.9750
+transcribed text accuracy:
+      1/Unknown - 0s 162ms/step - loss: 1.7030 - top1_accuracy: 0.5900 - top3_accuracy: 0.7500 - top5_accuracy:       2/Unknown - 0s 86ms/step - loss: 1.6026 - top1_accuracy: 0.6000 - top3_accuracy: 0.7650 - top5_accuracy: 0      3/Unknown - 0s 88ms/step - loss: 1.4409 - top1_accuracy: 0.6367 - top3_accuracy: 0.8067 - top5_accuracy: 0      4/Unknown - 0s 88ms/step - loss: 1.5239 - top1_accuracy: 0.6200 - top3_accuracy: 0.7875 - top5_accuracy: 0      5/Unknown - 1s 89ms/step - loss: 1.5579 - top1_accuracy: 0.6120 - top3_accuracy: 0.7860 - top5_accuracy: 0      6/Unknown - 1s 89ms/step - loss: 1.5591 - top1_accuracy: 0.6067 - top3_accuracy: 0.7950 - top5_accuracy: 06/6 [==============================] - 1s 92ms/step - loss: 1.5591 - top1_accuracy: 0.6067 - top3_accuracy: 0.7950 - top5_accuracy: 0.8633
+tfrecord files: /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/rnnt/rnnt_PretrainLibrispeech_TrainEMS/test_output_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/rnnt/rnnt_PretrainLibrispeech_TrainEMS/test_output_transcribed.tfrecord
+duration: min 5.08, max 48.32, sum 9351.239999999987, total 600, average 15.585399999999979
+INFO:absl:Load preprocessed data and metadata from /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/rnnt/rnnt_PretrainLibrispeech_TrainEMS/test_output_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/rnnt/rnnt_PretrainLibrispeech_TrainEMS/test_output_transcribed.tfrecord and meta_data.json 
+true text tflite accuracy:
+tflite inference time of model /home/liuyi/emsAssist_mobisys22/data/text_data/emsBERT_tfrecord_files/export_tflite/FineTune_MobileEnUncase1_Fitted_Desc_batch1.tflite on server is 0:00:00.243738
+Here is the top1/3/5 using tf sparse topk:
+0.735 0.93 0.975
+transcribed text tflite accuracy:
+tflite inference time of model /home/liuyi/emsAssist_mobisys22/data/text_data/emsBERT_tfrecord_files/export_tflite/FineTune_MobileEnUncase1_Fitted_Desc_batch1.tflite on server is 0:00:00.243288
+Here is the top1/3/5 using tf sparse topk:
+0.60833335 0.795 0.8666667
+
+#######################################
+label_path: /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/rnnt/rnnt_TrainFromScratchEMS/labels.txt
+tfrecord files: /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/rnnt/rnnt_TrainFromScratchEMS/test_output_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/rnnt/rnnt_TrainFromScratchEMS/test_output_transcribed.tfrecord
+duration: min 5.08, max 48.32, sum 9351.239999999996, total 600, average 15.585399999999993
+INFO:absl:Load preprocessed data and metadata from /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/rnnt/rnnt_TrainFromScratchEMS/test_output_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/rnnt/rnnt_TrainFromScratchEMS/test_output_transcribed.tfrecord and meta_data.json 
+we are using /home/liuyi/emsAssist_mobisys22/model/emsBERT/FineTune_MobileEnUncase1_Fitted_Desc/0004 for end2end evaluation
+true text accuracy:
+      1/Unknown - 3s 3s/step - loss: 0.9943 - top1_accuracy: 0.7200 - top3_accuracy: 0.9000 - top5_accuracy: 0.9      2/Unknown - 3s 104ms/step - loss: 1.0073 - top1_accuracy: 0.7150 - top3_accuracy: 0.9250 - top5_accuracy:       3/Unknown - 3s 98ms/step - loss: 0.9270 - top1_accuracy: 0.7367 - top3_accuracy: 0.9367 - top5_accuracy: 0      4/Unknown - 3s 95ms/step - loss: 0.9250 - top1_accuracy: 0.7375 - top3_accuracy: 0.9350 - top5_accuracy: 0      5/Unknown - 3s 94ms/step - loss: 0.9307 - top1_accuracy: 0.7340 - top3_accuracy: 0.9260 - top5_accuracy: 0      6/Unknown - 3s 93ms/step - loss: 0.9396 - top1_accuracy: 0.7250 - top3_accuracy: 0.9267 - top5_accuracy: 06/6 [==============================] - 3s 96ms/step - loss: 0.9396 - top1_accuracy: 0.7250 - top3_accuracy: 0.9267 - top5_accuracy: 0.9750
+transcribed text accuracy:
+      1/Unknown - 0s 162ms/step - loss: 4.4770 - top1_accuracy: 0.0400 - top3_accuracy: 0.1700 - top5_accuracy:       2/Unknown - 0s 86ms/step - loss: 4.5237 - top1_accuracy: 0.0350 - top3_accuracy: 0.1450 - top5_accuracy: 0      3/Unknown - 0s 88ms/step - loss: 4.5299 - top1_accuracy: 0.0333 - top3_accuracy: 0.1400 - top5_accuracy: 0      4/Unknown - 0s 89ms/step - loss: 4.5191 - top1_accuracy: 0.0400 - top3_accuracy: 0.1450 - top5_accuracy: 0      5/Unknown - 1s 89ms/step - loss: 4.4688 - top1_accuracy: 0.0460 - top3_accuracy: 0.1540 - top5_accuracy: 0      6/Unknown - 1s 89ms/step - loss: 4.5077 - top1_accuracy: 0.0467 - top3_accuracy: 0.1450 - top5_accuracy: 06/6 [==============================] - 1s 92ms/step - loss: 4.5077 - top1_accuracy: 0.0467 - top3_accuracy: 0.1450 - top5_accuracy: 0.2517
+tfrecord files: /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/rnnt/rnnt_TrainFromScratchEMS/test_output_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/rnnt/rnnt_TrainFromScratchEMS/test_output_transcribed.tfrecord
+duration: min 5.08, max 48.32, sum 9351.239999999996, total 600, average 15.585399999999993
+INFO:absl:Load preprocessed data and metadata from /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/rnnt/rnnt_TrainFromScratchEMS/test_output_true.tfrecord, /home/liuyi/emsAssist_mobisys22/data/transcription_text/audio_all/rnnt/rnnt_TrainFromScratchEMS/test_output_transcribed.tfrecord and meta_data.json 
+true text tflite accuracy:
+tflite inference time of model /home/liuyi/emsAssist_mobisys22/data/text_data/emsBERT_tfrecord_files/export_tflite/FineTune_MobileEnUncase1_Fitted_Desc_batch1.tflite on server is 0:00:00.242486
+Here is the top1/3/5 using tf sparse topk:
+0.735 0.93 0.975
+transcribed text tflite accuracy:
+tflite inference time of model /home/liuyi/emsAssist_mobisys22/data/text_data/emsBERT_tfrecord_files/export_tflite/FineTune_MobileEnUncase1_Fitted_Desc_batch1.tflite on server is 0:00:00.240811
+Here is the top1/3/5 using tf sparse topk:
+0.046666667 0.145 0.25166667
+This run takes 0:50:06.176773

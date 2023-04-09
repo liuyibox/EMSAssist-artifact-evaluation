@@ -149,8 +149,8 @@ def _load(true_tfrecord_file, transcribed_tfrecord_file, meta_data_file, max_seq
 
   meta_data = file_util.load_json_file(meta_data_file)
 
-  logging.info(
-      'Load preprocessed data and metadata from %s, %s and %s ', true_tfrecord_file, transcribed_tfrecord_file, meta_data_file)
+  # logging.info(
+  #     'Load preprocessed data and metadata from %s, %s and %s ', true_tfrecord_file, transcribed_tfrecord_file, meta_data_file)
   return true_dataset, transcribed_dataset, meta_data
 
 
@@ -323,7 +323,7 @@ def from_transcription_result_file(file_path,
   csv_base_path = file_path.split(".")[0]
   true_tfrecord_file = csv_base_path + "_true.tfrecord"
   transcribed_tfrecord_file = csv_base_path + "_transcribed.tfrecord"
-  print("tfrecord files: %s, %s" % (true_tfrecord_file, transcribed_tfrecord_file))
+  # print("tfrecord files: %s, %s" % (true_tfrecord_file, transcribed_tfrecord_file))
 
 #  is_cached = (os.path.exists(true_tfrecord_file) and os.path.exists(transcribed_tfrecord_file))
 #  if is_cached:
@@ -358,7 +358,7 @@ def from_transcription_result_file(file_path,
       guid = '%s-%d' % (csv_base_path, i)
       true_examples.append(InputExample(guid, true_text, label))
       transcribed_examples.append(InputExample(guid, transcribed_text, label))
-  print("duration: min %s, max %s, sum %s, total %s, average %s" % (dur_min, dur_max, sum(time_durations), len(time_durations), sum(time_durations)/len(time_durations)))
+  # print("duration: min %s, max %s, sum %s, total %s, average %s" % (dur_min, dur_max, sum(time_durations), len(time_durations), sum(time_durations)/len(time_durations)))
 
   # Saves preprocessed data and other assets into files.
   _save_data(true_examples, transcribed_examples, max_seq_len, tokenizer, true_tfrecord_file, transcribed_tfrecord_file, meta_data_file)
@@ -444,26 +444,27 @@ def get_label_path_for_all(strategy_path, test_out_path, labels_all_dict):
 def evaluate_end_to_end(args):
 
     spks = [
-        "audio_tian",
-        "audio_liuyi",
-        "audio_yichen",
-        "audio_radu",
-        "audio_amran",
-        "audio_michael",
+        # "audio_tian",
+        # "audio_liuyi",
+        # "audio_yichen",
+        # "audio_radu",
+        # "audio_amran",
+        # "audio_michael",
         "audio_all",
     ]
     labels_all_dict = merge_labels(args, spks)
+    # print("labels_all_dict len: %s" % len(labels_all_dict))
 
     speech_models = [
         "conformer",
-        "contextNet",
-        "rnnt"
+        # "contextNet",
+        # "rnnt"
     ]
 
     training_strategy = [
-        "PretrainLibrispeech_DirectInferenceEMS",
+        # "PretrainLibrispeech_DirectInferenceEMS",
         "PretrainLibrispeech_TrainEMS",
-        "TrainFromScratchEMS"
+        # "TrainFromScratchEMS"
     ]
 
     for spk_idx, spk in enumerate(spks):
@@ -473,8 +474,8 @@ def evaluate_end_to_end(args):
                 strategy_path = os.path.join(args.transcription_dir, spk, speech_model, model_training_strategy)
                 assert os.path.isdir(strategy_path)
 
-                if spk_idx != 6:
-                    continue
+                # if spk_idx != 6:
+                #     continue
 
                 print("\n#######################################")
                 if (spk == "audio_radu" and speech_model == "conformer" and strategy == "TrainFromScratchEMS"):
@@ -494,7 +495,10 @@ def evaluate_end_to_end(args):
                     label_path = os.path.join(args.transcription_dir, spk, "labels.txt")
                 else:
                     label_path = get_label_path_for_all(strategy_path, test_out_path, labels_all_dict)
-                print("label_path: %s" % label_path)        
+                
+                # print("strategy_path: %s" % strategy_path)
+                # print("label_path: %s" % label_path)
+                # print("test_out_path: %s" % test_out_path)                
 
                 true_dataset, transcribed_dataset, meta_data = from_transcription_result_file(test_out_path, label_path, args.max_seq_len)
                 true_ds = gen_dataset(true_dataset, args.batch_size)
@@ -634,7 +638,7 @@ if __name__ == "__main__":
     time_s = datetime.now()
 
     parser = argparse.ArgumentParser(description = "control the e2e eval functions for EMSBert")
-    parser.add_argument("--transcription_dir", action='store', type=str, default = "/slot1/emsAssist_e2e_eval", help="directory containing all transcription results")
+    parser.add_argument("--transcription_dir", action='store', type=str, default = "/home/liuyi/emsAssist_mobisys22/data/transcription_text", help="directory containing all transcription results")
     parser.add_argument("--protocol_model", action='store', type=str, required=True)
     parser.add_argument("--protocol_tflite_model", action='store', type=str, required=True)
     parser.add_argument("--cuda_device", action='store', type=str, default = "1", help="indicate the cuda device number")
