@@ -157,7 +157,7 @@ if __name__ == "__main__":
 
     print()
     print("args.tflite_model =", args.tflite_model)
-    data_path = '/'.join(args.tflite_model.split('/')[:-4]) + '/finetune_test.tsv'
+    data_path = '/'.join(args.tflite_model.split('/')[:-1]) + '/finetune_test.tsv'
     print("data_path =", data_path)
 
     output_path = '/'.join(args.tflite_model.split('/')[:-1]) + '/tflite_test_output.tsv'
