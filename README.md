@@ -22,6 +22,16 @@ Install the XGBoost-GPU: `conda install py-xgboost-gpu`. This also installs the 
 
 Install the TensorFlow-2.9: `pip install tensorflow-gpu==2.9`
 
+## Directory preparation
+
+Before we proceed, please make sure you successfully set up the environment or get the Docker image running with `nvidia-smi`
+
+* `git clone --recursive git@github.com:LENSS/EMSAssist.git`
+
+* `cd EMSAssist`
+
+* Download the [data](https://drive.google.com/drive/folders/1RGblUKwCLg0w7RsPFP2x_AntsabnntaQ?usp=share_link) and [model](https://drive.google.com/drive/folders/1VEDDCNO_UBjzFdsu4zhv3UcTy4NnCpdO?usp=share_link) folder from Google Drive]. Copy the `data` and `model` folders to the folder `EMSAssist`. Make sure we have 3 folders under `EMSAssist` directory: `src`, `data`, and `model`.
+
 <!-- we create and activate a conda environment with tensorflow-gpu: `conda activate tf-gpu` -->
 
 ## Basic Environment
