@@ -1,4 +1,15 @@
-# EMSAssist
+# Directory preparation
+
+Before we proceed, please make sure you successfully set up the environment or get the Docker image running with `nvidia-smi`
+
+* `git clone --recursive git@github.com:LENSS/EMSAssist.git`
+
+* `cd EMSAssist`
+
+* Download the [data](https://drive.google.com/drive/folders/1RGblUKwCLg0w7RsPFP2x_AntsabnntaQ?usp=share_link) and [model](https://drive.google.com/drive/folders/1VEDDCNO_UBjzFdsu4zhv3UcTy4NnCpdO?usp=share_link) folder from Google Drive]. Copy the `data` and `model` folders to the folder `EMSAssist`. Make sure we have 3 folders under `EMSAssist` directory: `src`, `data`, and `model`.
+
+
+<!-- # EMSAssist
 This repository contains the finalized files for EMSAssist. For artifact evaluation (AE) purposes, i.e., you only want to reproduce the results with our fine-tuned TensorFlow/TensorFlowLite (TF/TFLite) models, you can just look at the testing sections. In cases where you want to develop your customized protocol selection or automatic speech recognition (ASR) models, you can refer to the training sections.
 
 We tested this repo with TensorFlow-GPU versions: 2.9, 2.11
@@ -302,4 +313,4 @@ The BERT_Base model
 
 
 `cd src/protocol_selection/test`
-`python emsBERT.py --eval_dir ../data/text_data --model_dir /home/liuyi/emsAssist_mobisys22/model/emsBERT/FineTune_Pretrained30_NoFitted_Desc/ --init_model /slot1/models/official/nlp/bert/saved_models/epoch30/ --cuda_device 2 --max_seq_len 128 --train_file no_fitted_separated_desc_code_102_train.txt --train_batch_size 8 --eval_file no_fitted_separated_desc_code_102_eval.txt --eval_batch_size 64 --test_file no_fitted_separated_desc_code_102_test.txt --test_batch_size 64 --train_epoch 10 --do_test --save_tflite --tflite_name FineTune_Pretrained30_NoFitted_Desc_batch1.tflite`
+`python emsBERT.py --eval_dir ../data/text_data --model_dir /home/liuyi/emsAssist_mobisys22/model/emsBERT/FineTune_Pretrained30_NoFitted_Desc/ --init_model /slot1/models/official/nlp/bert/saved_models/epoch30/ --cuda_device 2 --max_seq_len 128 --train_file no_fitted_separated_desc_code_102_train.txt --train_batch_size 8 --eval_file no_fitted_separated_desc_code_102_eval.txt --eval_batch_size 64 --test_file no_fitted_separated_desc_code_102_test.txt --test_batch_size 64 --train_epoch 10 --do_test --save_tflite --tflite_name FineTune_Pretrained30_NoFitted_Desc_batch1.tflite` -->
