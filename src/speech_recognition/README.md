@@ -6,15 +6,26 @@
 
 ### Google Cloud Speech-to-Text
 
-We do not provide the access and commands to Google Cloud Speech-to-Text service. Instead, we provide the transcription result text files for evaluation. 
+We do not provide the access and commands to Google Cloud Speech-to-Text service. Instead, we provide the transcription result text files from Google Cloud for evaluation. 
 
+`cd ~/emsAssist_mobisys22/src/speech_recognition`
+
+`python evaluate_asr_google_cloud.py --dir /home/liuyi/emsAssist_mobisys22/data/transcription_text/cloud_translate`
+
+> 		 GC1           0.19617589              0.09608538
+> 		 GC2           0.1844242               0.048514143
+> 		 GC3           0.17997624              0.05102378
+> 		 GC4           0.15486819              0.04636817
+> 		 GC5           0.49261895              0.18047477
+> 		 GC6           0.20230265              0.098688245
+> 		 GC7           0.08300704              0.030546615
+> 		 GC8           0.30032083              0.1126812
+> 		 This run takes 0:01:28.366960
 
 
 ### EMSConformer on Server
 
-`conda activate xgb-gpu`
-
-`cd ~/emsAssist_mobisys22/src/speech_recognition/examples/conformer`
+`cd examples/conformer`
 
 `python test.py --output test_outputs/test_for_all_ae.txt --saved ~/emsAssist_mobisys22/model/speech_models/all_14.h5 --config config_PretrainLibrispeech_TrainEMS_all.yml`
 

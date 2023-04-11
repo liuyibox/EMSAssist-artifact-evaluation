@@ -554,15 +554,16 @@ def evaluate_end_to_end(args):
     #     print("E2E %s \t %s" % ([round(result[7][0], 2), round(result[7][1], 2), round(result[7][2], 2)],
     #                               [round(result[7][3], 2), round(result[7][4], 2), round(result[7][5], 2)]))
 
+    print(len(true_result_list))
+
     print("\n##### EMSMobileBERT E2E Protocol Selection Accuracy #####")
-    print("\t\t SOTA (GC7)  \t\t\t\t EMSAssist (ours)")
-    print("\t\t Server \t\t PH-1\t\t\t\t Server \t\t PH-1")    
-    for idx, line in enumerate(true_result_list):
+    print("\t\t SOTA (GC7)  \t\t\t\t\t EMSAssist (ours)")
+    print("\t\t Server \t\t PH-1\t\t\t Server \t\t PH-1")    
+    for idx, line in enumerate(true_result_list[:6]):
 
         result = sota_result[idx]
 
-        print("User %d\t Truth \t %s \t %s \t %s \t %s" % (idx + 1,
-                                [round(result[0][0], 2), round(result[0][1], 2), round(result[0][2], 2)],
+        print("\t Truth \t %s \t %s \t %s \t %s" % ( [round(result[0][0], 2), round(result[0][1], 2), round(result[0][2], 2)],
                                 [round(result[0][3], 2), round(result[0][4], 2), round(result[0][5], 2)],
                                 [round(line[1], 2), round(line[2], 2), round(line[3], 2)], 
                                 [round(true_tflite_result_list[idx][0], 2), round(true_tflite_result_list[idx][1], 2), round(true_tflite_result_list[idx][2], 2)]))
