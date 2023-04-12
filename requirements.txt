@@ -14,4 +14,4 @@ librosa
 tensorflow-io == 0.26
 tensorflow_datasets
 nltk
-pydup
+pydub
