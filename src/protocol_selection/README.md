@@ -1,21 +1,24 @@
-# EMSMobileBERT
+# Protocol Selection
 
-This repository contains the finalized files for EMSAssist. For artifact evaluation (AE) purposes, i.e., you only want to reproduce the results with our fine-tuned TensorFlow/TensorFlowLite (TF/TFLite) models, you can just look at the testing sections. In cases where you want to develop your customized protocol selection or automatic speech recognition (ASR) models, you can refer to the training sections.
+We replicate Table 4 in this section, which is covered by inference commands using our provided model. In addition, we provide commands to train the model on your own, which should produce almost the same results shown in Table 4 in EMSAssist paper. It's highly recommend to use a performant NVIDIA GPU in this part for reducing inference/training time. We use NVIDIA A30. We provide expected output after each command as what we do in other folders.
 
-We tested this repo with TensorFlow-GPU versions: 2.9, 2.11
+## 1 Testing
 
-# 1. Protocol Selection
+### 1.1 Protocol Selection on Customized Local Dataset
 
-## 1.1 Requirements
+MetaMap/MetaMapLite (SOTA, 11 mins): `python match_nemsis_nemsisconcepts.py --concept_set_source both --metric cosine --input_mm_file nemsis_input_mm_concept.txt --input_mml_file nemsis_input_mml_concept.txt`
 
-Install the required modules for training/testing protocol selection models:
+> =============== protocol_selection ====================
+> 
+> /home/liuyi/anaconda3/envs/xgb-gpu/lib/python3.7/site-packages/scipy/spatial/distance.py:699: RuntimeWarning: invalid value encountered in sqrt
+>
+>  dist = 1.0 - uv / np.sqrt(uu * vv)
+>
+>(cosine) input metamap topk:  0.13053887402542227 0.37417469485239235 0.49031450585033703
+>
+>(cosine) input metamaplite topk:  0.10407169676997095 0.26762851795289877 0.33216020392931367
 
-`pip install -r requirements.txt`
 
-
-## 1.2 Testing
-
-### 1.2.1 Protocol Selection on Customized Local Dataset
 
 EMSMobileBERT (ours, 1.2 mins): `python emsBERT.py --test_model_path ../../model/emsBERT/FineTune_MobileEnUncase1_Fitted_Desc/0004/ --eval_dir ../../data/ae_text_data/ --cuda_device 1 --max_seq_len 128 --test_file no_fitted_separated_desc_code_46_test.txt --test_batch_size 64 --do_test`
 
