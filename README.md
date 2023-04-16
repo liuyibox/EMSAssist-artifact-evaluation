@@ -46,9 +46,9 @@ Before we proceed, please make sure you successfully set up the environment or g
 
 * decompress the `model.tar.gz`: `tar -xvzf model.tar.gz`
 
-* decompress the `data.tar.gz`: `tar -xvzf data.tar.gz`. After this step, make sure we have 3 folders under `EMSAssist` directory: `src`, `examples`, `data`, and `model`.
+* decompress the `data.tar.gz`: `tar -xvzf data.tar.gz`. After this step, make sure we have 5 folders under `EMSAssist` directory: `src`, `examples`, `data`, `init_models` and `model`.
 
-
+* begin the evaluation: `cd src`. Check out the README file when you enter each sub-directory.
 
 
 <!-- we create and activate a conda environment with tensorflow-gpu: `conda activate tf-gpu` -->
@@ -79,7 +79,7 @@ Before the artifact evaluation and use the open-sourced code/data, please make s
 | TensorFlow  | 2.9   |
 
 
-```
+<!-- ```
 conda create -n xgb-gpu
 conda activate xgb-gpu
 conda install python=3.7
@@ -91,4 +91,4 @@ pip install tensorflow-gpu==2.9
 
 `mv /home/liuyi/anaconda3/lib/libstdc++.so.6.0.29 /home/liuyi/anaconda3/lib/libstdc++.so.6.0.29.old`
 
-`ln -s /home/liuyi/anaconda3/envs/tf-gpu/lib/libstdc++.so.6.0.30 /home/liuyi/anaconda3/lib/libstdc++.so.6.0.29`
+`ln -s /home/liuyi/anaconda3/envs/tf-gpu/lib/libstdc++.so.6.0.30 /home/liuyi/anaconda3/lib/libstdc++.so.6.0.29` -->
