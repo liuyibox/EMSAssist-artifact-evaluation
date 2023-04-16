@@ -22,6 +22,8 @@ First of all, we download anaconda for smoother artifact evaluation
 
 * Install the TensorFlow-2.9: `pip install tensorflow-gpu==2.9`
 
+* Install the CUDA ToolKit 11.0 and CuDNN 8.0: `conda install -c conda-forge cudatoolkit=11.0 cudnn`
+
 * Install the required python modules: `pip install -r requirements.txt`
 
 ## Directory and path preparation
