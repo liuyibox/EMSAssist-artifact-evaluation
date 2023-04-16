@@ -6,6 +6,8 @@ This repository currently contains the reproducible artifact for EMSAssist.
 
 We follow the [official docker guide](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-20-04) to install and run docker images:
 
+Install docker, docker_compose
+
 
 ## Using bare metal machine 
 First of all, we download anaconda for smoother artifact evaluation
