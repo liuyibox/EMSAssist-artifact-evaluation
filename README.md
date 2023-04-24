@@ -33,26 +33,26 @@ We first install docker and pull the docker image from dockerhub.
 
 ### 2.1 Install Docker
 
-	* Update and Install Docker:
-	```console
-    $ sudo apt update
-	$ sudo apt-get install docker
-	```
+* Update and Install Docker:
+```console
+$ sudo apt update
+$ sudo apt-get install docker
+```
 
-	* Test Docker installation: (should show docker.service details.)
-	```console 
-    $ sudo systemctl status docker 
-    ```
+* Test Docker installation: (should show docker.service details.)
+```console 
+$ sudo systemctl status docker 
+```
 	
-	* Perform post installation steps to avoid sudo
-	```console
-    #Create the Docker group.
-	$ sudo groupadd docker
-	#Add your user to the Docker group
-	$ sudo usermod -aG docker $USER
-	#Activate the changes to groups
-	$ newgrp docker
-    ```
+* Perform post installation steps to avoid sudo
+```console
+# Create the Docker group.
+$ sudo groupadd docker
+# Add your user to the Docker group
+$ sudo usermod -aG docker $USER
+# Activate the changes to groups
+$ newgrp docker
+```
 ### 2.2 Install Docker-Compose
 
 	```
