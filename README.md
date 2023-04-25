@@ -65,7 +65,7 @@ $ sudo apt-get install docker-compose
 This toolkit allows you to connect the container engine to the bare metal machine's nvidia driver.
 
 ```console
-# enter the sudo user mode to add key and repository 
+#enter the sudo user mode to add key and repository 
 $ sudo -i
 $ curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | apt-key add -
 $ curl -s -L https://nvidia.github.io/nvidia-docker/ubuntu22.04/nvidia-docker.list > /etc/apt/sources.list.d/nvidia-docker.list
