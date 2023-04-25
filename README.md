@@ -84,12 +84,11 @@ $ systemctl restart docker
 
 ### 2.4 Clone the git repository of EMSAssist
 
-	```console
-	$ git clone --recursive git@github.com:LENSS/EMSAssist.git`
-	$ cd EMSAssist
-	$ git clone --recursive git@github.com:tensorflow/examples.git
-    $ cd ..
-	```
+```console
+$ git clone --recursive git@github.com:LENSS/EMSAssist.git`
+$ cd EMSAssist
+$ git clone --recursive git@github.com:tensorflow/examples.git
+```
 
 ### 2.5 Download and decompress the data and model
 
