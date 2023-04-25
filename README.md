@@ -31,7 +31,7 @@ Assuming NVIDIA GPUs present in the bare metal system running Ubuntu 22.04, we c
 
 We first install docker and pull the docker image from dockerhub.
 
-### 2.1 Install Docker
+### 2.1 Install Docker on Bare Metal Machine
 
 * Update and Install Docker:
 ```console
@@ -46,38 +46,39 @@ $ sudo systemctl status docker
 	
 * Perform post installation steps to avoid sudo
 ```console
-# Create the Docker group.
+#Create the Docker group.
 $ sudo groupadd docker
-# Add your user to the Docker group
+#Add your user to the Docker group
 $ sudo usermod -aG docker $USER
-# Activate the changes to groups
+#Activate the changes to groups
 $ newgrp docker
 ```
 ### 2.2 Install Docker-Compose
 
-	```
-    $ sudo apt update
-	$ sudo apt-get install docker-compose 
-    ```
+```console
+$ sudo apt update
+$ sudo apt-get install docker-compose 
+```
 
 ### 2.3 Install nvidia container tootlkit in local machine (requires Docker dameon to reload).
 
-	This toolkit allows you to connect the container engine to the bare metal machine's nvidia driver.
+This toolkit allows you to connect the container engine to the bare metal machine's nvidia driver.
 
-	```
-    #Add key and repository 
-	$ curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | apt-key add -
-	$ curl -s -L https://nvidia.github.io/nvidia-docker/ubuntu22.04/nvidia-docker.list > /etc/apt/sources.list.d/nvidia-docker.list
-	
-    #Update repository
-	$ apt update
-	
-    #Install nvidia-container-toolkit
-	$ sudo apt -y install nvidia-container-toolkit
-	
-    #Restart docker engine
-	$ systemctl restart docker
-    ```
+```console
+#Add key and repository 
+$ sudo -i
+$ curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | apt-key add -
+$ curl -s -L https://nvidia.github.io/nvidia-docker/ubuntu22.04/nvidia-docker.list > /etc/apt/sources.list.d/nvidia-docker.list
+
+#Update repository
+$ apt update
+
+#Install nvidia-container-toolkit
+$ sudo apt -y install nvidia-container-toolkit
+
+#Restart docker engine, this requires authentication
+$ systemctl restart docker
+```
 
 ### 2.4 Clone the git repository of EMSAssist
 
