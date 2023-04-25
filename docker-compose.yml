@@ -26,6 +26,7 @@ services:
     image: haroon3rd/anaconda3:nvidia-v1
     container_name: emsassist
     volumes:
+      - ./src:/home/EMSAssist/src
       - ./data:/home/EMSAssist/data
       - ./model:/home/EMSAssist/model
     #command: [/bin/bash -c "tail -f /dev/null"]
