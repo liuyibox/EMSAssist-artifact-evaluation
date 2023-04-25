@@ -48,11 +48,14 @@ $ sudo systemctl status docker
 ```console
 #Create the Docker group.
 $ sudo groupadd docker
+
 #Add your user to the Docker group
 $ sudo usermod -aG docker $USER
+
 #Activate the changes to groups
 $ newgrp docker
 ```
+
 ### 2.2 Install Docker-Compose
 
 ```console
