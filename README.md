@@ -127,7 +127,7 @@ $ conda activate emsassist-gpu
 #make sure you can see nvidia-device after you login the docker
 $ nvidia-smi
 
-# follow the README in the EMSAssist/src to continue the evaluation
+#follow the README in the EMSAssist/src to continue the evaluation
 $ cd src
 ```
 
