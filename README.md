@@ -84,7 +84,7 @@ $ systemctl restart docker
 
 ### 2.4 Download the data and model
 
-Download the [data.tar.gz](https://drive.google.com/file/d/1Li-oA6ZfuHx2EbqGWbhK-sZvwgnHVJs9/view?usp=share_link), [model.tar.gz](https://drive.google.com/file/d/12LOuUl__T-oVMBQRLd8p7m27AiepQrSR/view?usp=share_link) files from Google Drive to a place with more more than 200 GB free space. We expect the downloading to take 1-2 hours.
+Download the [data.tar.gz](https://drive.google.com/file/d/1Li-oA6ZfuHx2EbqGWbhK-sZvwgnHVJs9/view?usp=share_link), [model.tar.gz](https://drive.google.com/file/d/12LOuUl__T-oVMBQRLd8p7m27AiepQrSR/view?usp=share_link) files from Google Drive to a place with more more than 200 GB free space. We expect the downloading would take 1-2 hours.
 
 ### 2.5 Clone EMSAssist and decompress data into EMSAssist
 
@@ -93,10 +93,10 @@ $ git clone --recursive git@github.com:LENSS/EMSAssist.git`
 $ cd EMSAssist
 
 #Inside EMSAssist, decompress model.tar.gz
-$ tar -xf model.tar.gz
+$ tar -xf model.tar.gz -C .
 
 #Inside EMSAssist, decompress the data.tar.gz
-$ tar -xf data.tar.gz
+$ tar -xf data.tar.gz -C .
 ```
 
 <!-- ### 2.6 Download and decompress the data and model inside EMSAssist -->
@@ -112,7 +112,7 @@ $ tar -xf data.tar.gz
 
 ``` -->
 
-With the steps above, we should have `data`, `model`, `examples`, `src`, `docker-compose.yml`， `requirements.txt` in `EMSAssist` folder.
+With the steps above, we should have `data`, `model`, `init_models`, `examples`, `src`, `docker-compose.yml`， `requirements.txt` in `EMSAssist` folder.
 
 ### 2.6 Launch the docker
 
@@ -122,7 +122,7 @@ $ docker-compose up -d
 ```
 It will pull a docker container image and run it in bare metal machine as "emsassist". The docker image size is about 20 GB.
 
-### 2.7 Login the docker, set up the data paths
+### 2.7 Login the docker container and set up the data paths
 
 ```console
 $ docker exec -it emsassist /bin/bash
