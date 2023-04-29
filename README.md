@@ -118,36 +118,53 @@ With the steps above, we should have `data`, `model`, `examples`, `src`, `docker
 
 ```console
 #Run docker-compose in silent mode from EMSAssist folder
-#It will pull a docker container image and run it in bare metal machine as "emsassist"
 $ docker-compose up -d
 ```
+It will pull a docker container image and run it in bare metal machine as "emsassist". The docker image size is about 20 GB.
 
-### 2.7 Login the docker, set up the paths
+### 2.7 Login the docker, set up the data paths
 
 ```console
 $ docker exec -it emsassist /bin/bash
 $ conda activate emsassist-gpu
 
-#make sure you can see nvidia-device after you login the docker
+#Right now, we are in the `/home/EMSAssist` directory. Please make sure you can see nvidia-device after you login the docker
 $ nvidia-smi
+
+#The data path needs to be reset
+$ cd data
+$ python reconfig_data_path.py
 ```
 
-Now you are inside the docker container as a sudo user, and your current location should be `root`. Before you go to specific `/home/EMSAssist/src` directories to evaluate the artifact, we want you to make sure the python path and library path are set up correctly (The two paths should already be set up).
+We want to make sure the python path and library path are set up correctly (The two paths should already be set up).
 
-```console
-
-
-* `echo $PYTHONPATH`
+$ echo $PYTHONPATH`
 
 > /home/EMSAssist/src/speech_recognition:/home/EMSAssist/examples
 
-* `echo $LD_LIBRARY_PATH`
+$ echo $LD_LIBRARY_PATH
 
 > LD_LIBRARY_PATH=/opt/conda/envs/emsassist-gpu/lib:/usr/local/nvidia/lib:/usr/local/nvidia/lib64
+
+<!-- ``` -->
+
+<!-- Now you are inside the docker container as a sudo user, and your current location should be `root`. Before you go to specific `/home/EMSAssist/src` directories to evaluate the artifact, we want you to make sure the python path and library path are set up correctly (The two paths should already be set up). -->
+
+<!-- ```console -->
+
+
+<!-- * `echo $PYTHONPATH` -->
+
+<!-- > /home/EMSAssist/src/speech_recognition:/home/EMSAssist/examples
+
+* `echo $LD_LIBRARY_PATH`
+
+> LD_LIBRARY_PATH=/opt/conda/envs/emsassist-gpu/lib:/usr/local/nvidia/lib:/usr/local/nvidia/lib64 -->
 
 If, in some cases, the paths above do not match what's shown above inside the container, please set it up when you are in the `EMSAssist` folder while you login into the container:
 
 ```console
+cd /home/EMSAssist
 export PYTHONPATH=$PWD/src/speech_recognition:$PWD/examples
 export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
 ```
@@ -158,7 +175,6 @@ $ python reconfig_data_path.py
 $ cd ../..
 
 
-```
 
 ### 2.8 Begin the evaluation
 ```
