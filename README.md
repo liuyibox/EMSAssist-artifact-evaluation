@@ -132,8 +132,9 @@ $ conda activate emsassist-gpu
 $ nvidia-smi
 
 #The data path needs to be reset
-$ cd data
+$ cd data/transcription_text
 $ python reconfig_data_path.py
+$ cd ../..
 ```
 
 We want to make sure the python path and library path are set up correctly (The two paths should already be set up).
@@ -168,11 +169,11 @@ cd /home/EMSAssist
 export PYTHONPATH=$PWD/src/speech_recognition:$PWD/examples
 export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
 ```
-
+<!-- 
 #correcting the data path, this is important
 $ cd data/transcription_text/
 $ python reconfig_data_path.py
-$ cd ../..
+$ cd ../.. -->
 
 
 
