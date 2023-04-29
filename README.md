@@ -15,7 +15,7 @@ EMSAssist artifact evaluation relies on some basic software and hardware environ
 | ------------- | ------------- |
 | GPU  | 3 x NVIDIA A30   |
 | CPU | 2 x Intel Xeon 4314 |
-| Disk | require more than 200 GB |
+| Disk | require more than 400 GB |
 | RAM | require more than 32GB |
 
 Before evaluating and using the EMSAssist artifact, please make sure you have at least 1 NVIDIA GPU available with `nvidia-smi` command.
@@ -82,34 +82,43 @@ $ sudo apt -y install nvidia-container-toolkit
 $ systemctl restart docker
 ```
 
-### 2.4 Clone EMSAssist and clone tf examples inside EMSAssist
+### 2.4 Download the data and model
+
+Download the [data.tar.gz](https://drive.google.com/file/d/1Li-oA6ZfuHx2EbqGWbhK-sZvwgnHVJs9/view?usp=share_link), [model.tar.gz](https://drive.google.com/file/d/12LOuUl__T-oVMBQRLd8p7m27AiepQrSR/view?usp=share_link) files from Google Drive to a place with more more than 200 GB free space. We expect the downloading to take 1-2 hours.
+
+### 2.5 Clone EMSAssist and decompress data into EMSAssist
 
 ```console
 $ git clone --recursive git@github.com:LENSS/EMSAssist.git`
+$ cd EMSAssist
+
+#Inside EMSAssist, decompress model.tar.gz
+$ tar -xf model.tar.gz
+
+#Inside EMSAssist, decompress the data.tar.gz
+$ tar -xf data.tar.gz
 ```
 
-### 2.5 Download and decompress the data and model inside EMSAssist
+<!-- ### 2.6 Download and decompress the data and model inside EMSAssist -->
 
-Download the [data.tar.gz](https://drive.google.com/file/d/1Li-oA6ZfuHx2EbqGWbhK-sZvwgnHVJs9/view?usp=share_link), [model.tar.gz](https://drive.google.com/file/d/12LOuUl__T-oVMBQRLd8p7m27AiepQrSR/view?usp=share_link) files from Google Drive to the cuurent working (e.g., /home/$username/EMAssist) folder. We expect the downloading and decompressing to take 2-3 hours.
+
+<!-- the cuurent working (e.g., /home/$username/EMAssist) folder. We expect the downloading and decompressing to take 2-3 hours. -->
 
 <!-- and [docker-compose.yml](https://drive.google.com/file/d/12LOuUl__T-oVMBQRLd8p7m27AiepQrSR/view?usp=share_link) -->
 
-```console
-#decompress model.tar.gz
-$ tar -xvzf model.tar.gz
-
-#decompress the data.tar.gz
-$ tar -xvzf data.tar.gz
+<!-- ```console
 
 
-```
+
+``` -->
 
 With the steps above, we should have `data`, `model`, `examples`, `src`, `docker-compose.yml`， `requirements.txt` in `EMSAssist` folder.
 
 ### 2.6 Launch the docker
 
 ```console
-#Run docker-compose in silent mode from EMSAssist folder. it will pull a docker container image and run it in bare metal machine as "emsassist"
+#Run docker-compose in silent mode from EMSAssist folder
+#It will pull a docker container image and run it in bare metal machine as "emsassist"
 $ docker-compose up -d
 ```
 
