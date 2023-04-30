@@ -84,7 +84,9 @@ $ systemctl restart docker
 
 ### 2.4 Download the data and model
 
-Download the [data.tar.gz](https://drive.google.com/file/d/1Li-oA6ZfuHx2EbqGWbhK-sZvwgnHVJs9/view?usp=share_link), [model.tar.gz](https://drive.google.com/file/d/12LOuUl__T-oVMBQRLd8p7m27AiepQrSR/view?usp=share_link) files from Google Drive to a place with more more than 200 GB free space. We expect the downloading would take 1-2 hours.
+Download the [data.tar.gz](https://drive.google.com/file/d/1Li-oA6ZfuHx2EbqGWbhK-sZvwgnHVJs9/view?usp=sharing), [model.tar.gz](https://drive.google.com/file/d/12LOuUl__T-oVMBQRLd8p7m27AiepQrSR/view?usp=sharing) files from Google Drive to a place with more more than 200 GB free space. We expect the downloading would take 1-2 hours.
+
+Additional Google Drive links for the [data1.tar.gz](https://drive.google.com/file/d/1dsWkGsAbm0U1sNzsKYJMVtnyoAUo8koY/view?usp=sharing), [model1.tar.gz](https://drive.google.com/file/d/1zkWWY9624gMN2Qh8eNJcabps6MKDzY58/view?usp=sharing)
 
 ### 2.5 Clone EMSAssist and decompress data into EMSAssist
 
@@ -218,7 +220,7 @@ Before we proceed, please make sure you successfully set up the environment or g
 
 * `export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH`
 
-* Download the [data.tar.gz](https://drive.google.com/file/d/1Li-oA6ZfuHx2EbqGWbhK-sZvwgnHVJs9/view?usp=share_link) and [model.tar.gz](https://drive.google.com/file/d/12LOuUl__T-oVMBQRLd8p7m27AiepQrSR/view?usp=share_link) tar files from Google Drive to the cuurent EMSAssist folder. We expect the downloading and decompressing to take 2-3 hours.
+* Download the [data.tar.gz](https://drive.google.com/file/d/1dsWkGsAbm0U1sNzsKYJMVtnyoAUo8koY/view?usp=sharing) and [model.tar.gz](https://drive.google.com/file/d/1zkWWY9624gMN2Qh8eNJcabps6MKDzY58/view?usp=sharing) tar files from Google Drive to the cuurent EMSAssist folder. We expect the downloading and decompressing to take 2-3 hours.
 
 * decompress the `model.tar.gz`: `tar -xvzf model.tar.gz`
 
