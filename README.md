@@ -139,13 +139,13 @@ $ cd ../..
 
 We want to make sure the python path and library path are set up correctly (The two paths should already be set up).
 
-$ echo $PYTHONPATH`
+$ echo $PYTHONPATH
 
 > /home/EMSAssist/src/speech_recognition:/home/EMSAssist/examples
 
 $ echo $LD_LIBRARY_PATH
 
-> LD_LIBRARY_PATH=/opt/conda/envs/emsassist-gpu/lib:/usr/local/nvidia/lib:/usr/local/nvidia/lib64
+> /root/anaconda3/envs/emsassist-gpu/lib:
 
 <!-- ``` -->
 
